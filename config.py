@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BRAND = os.getenv("BRAND", "Liaison")
-DB_PATH = os.getenv("DB_PATH", "liaison.db")
+DB_PATH = os.getenv("DB_PATH", "/tmp/liaison.db")
 
 # WhatsApp concierge number users message after signup (Wassist inbound handoff).
 CONCIERGE_WA_NUMBER = os.getenv("CONCIERGE_WA_NUMBER", "447883319107")
