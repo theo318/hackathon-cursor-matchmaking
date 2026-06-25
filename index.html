@@ -95,20 +95,31 @@
 
   /* payment step */
   #pay-step{display:none}
-  .pay-box{background:#fff8f0;border:1px solid var(--gold-line);border-radius:11px;padding:22px 20px;margin-bottom:18px;text-align:center}
-  .pay-box .price{font-family:var(--serif);font-size:42px;font-weight:600;color:var(--red);line-height:1}
-  .pay-box .price-label{font-size:13px;color:var(--muted);margin:4px 0 14px}
-  .pay-box ul{list-style:none;padding:0;margin:0 0 6px;text-align:left;font-size:14px;color:var(--ink)}
-  .pay-box ul li{padding:5px 0;padding-left:22px;position:relative}
-  .pay-box ul li::before{content:"✓";position:absolute;left:0;color:#1faa54;font-weight:700}
+  .pay-header{text-align:center;margin-bottom:18px}
+  .price-badge{
+    display:inline-flex;align-items:baseline;gap:4px;
+    font-family:var(--serif);color:var(--red);
+  }
+  .price-badge .amt{font-size:52px;font-weight:600;line-height:1}
+  .price-badge .cur{font-size:22px;font-weight:500;align-self:flex-start;margin-top:10px}
+  .price-sub{font-size:13px;color:var(--muted);margin:6px 0 0}
+  .guarantee{
+    background:#f0faf4;border:1px solid #b6e4c8;border-radius:10px;
+    padding:14px 16px;margin:16px 0 20px;font-size:13px;color:#1a6b3c;line-height:1.5;
+    display:flex;gap:10px;align-items:flex-start;
+  }
+  .guarantee .icon{font-size:18px;flex-shrink:0;margin-top:1px}
+  #payment-element{margin-bottom:16px}
+  #payment-message{color:var(--red);font-size:13px;text-align:center;min-height:1.2em;margin-bottom:8px}
   .pay-btn{
-    margin-top:18px;width:100%;padding:15px;cursor:pointer;
+    width:100%;padding:15px;cursor:pointer;
     font-family:var(--serif);font-size:18px;font-weight:600;
     color:#4a0f10;border:none;border-radius:11px;
     background:linear-gradient(180deg,#f3d792 0%,#e3b85b 55%,#cf9e44 100%);
     box-shadow:0 8px 22px rgba(120,70,0,.35);transition:transform .12s,box-shadow .12s;
   }
-  .pay-btn:hover{transform:translateY(-1px)}
+  .pay-btn:hover:not(:disabled){transform:translateY(-1px)}
+  .pay-btn:disabled{opacity:.6;cursor:not-allowed}
   .back-link{display:block;text-align:center;margin-top:12px;font-size:13px;color:var(--muted);cursor:pointer;text-decoration:underline}
 
   /* confirmation */
@@ -296,18 +307,17 @@
     <!-- PAYMENT STEP -->
     <div id="pay-step">
       <div class="eyebrow">One last thing</div>
-      <h1 style="font-size:26px;margin-bottom:16px">Reserve your spot</h1>
-      <div class="pay-box">
-        <div class="price">50p</div>
-        <div class="price-label">one-time · covers your first date</div>
-        <ul>
-          <li>Turn down as many potential matches as you like — for free</li>
-          <li>50p only when you decide to go on a date</li>
-          <li>No one ever finds out who said no</li>
-          <li>Introduction handled entirely by your concierge</li>
-        </ul>
+      <div class="pay-header">
+        <div class="price-badge"><span class="cur">£</span><span class="amt">0.50</span></div>
+        <p class="price-sub">reserved now · only used if your date happens</p>
       </div>
-      <button class="pay-btn" id="pay-btn">Pay 50p &amp; unlock ❤</button>
+      <div class="guarantee">
+        <span class="icon">🛡️</span>
+        <span><strong>Zero-risk guarantee.</strong> We hold 50p now but only use it if your date actually happens. No date within 7 days? You get an automatic full refund — no questions asked.</span>
+      </div>
+      <div id="payment-element"></div>
+      <div id="payment-message"></div>
+      <button class="pay-btn" id="pay-btn">Reserve my spot ❤</button>
       <span class="back-link" id="back-link">← Go back</span>
     </div>
 
@@ -405,8 +415,10 @@
 
 </div><!-- /scene -->
 
+<script src="https://js.stripe.com/v3/"></script>
 <script>
   const FALLBACK_WA = "447883319107";
+  const STRIPE_PK = "__STRIPE_PK__";
 
   // floating hearts
   const H = document.getElementById('hearts');
@@ -430,10 +442,15 @@
     return () => val;
   }
   const getGender = seg('gender'), getSeeking = seg('seeking');
+
   let pendingWaLink = null;
+  let pendingSignupId = null;
+  let stripe = null;
+  let elements = null;
 
   const form = document.getElementById('form');
   const err  = document.getElementById('err');
+
   form.addEventListener('submit', async e => {
     e.preventDefault(); err.textContent = '';
     const linkedin = document.getElementById('li').value.trim();
@@ -447,18 +464,86 @@
     pendingWaLink = `https://wa.me/${FALLBACK_WA}?text=${encodeURIComponent("Hi! I'm ready to meet someone ❤")}`;
     try {
       const r = await fetch('/signup', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({linkedin,gender,seeking,location})});
-      if (r.ok) { const d = await r.json(); if (d.wa_link) pendingWaLink = d.wa_link; }
+      if (r.ok) {
+        const d = await r.json();
+        if (d.wa_link) pendingWaLink = d.wa_link;
+        pendingSignupId = d.signup_id;
+      }
     } catch(_) {}
 
     form.style.display = 'none';
+    await mountPayment();
     document.getElementById('pay-step').style.display = 'block';
   });
 
-  document.getElementById('pay-btn').addEventListener('click', () => {
+  async function mountPayment() {
+    if (!STRIPE_PK || STRIPE_PK === '__STRIPE_PK__') {
+      // No Stripe configured — skip straight through (dev mode)
+      document.getElementById('pay-btn').onclick = skipToConfirmation;
+      return;
+    }
+    stripe = Stripe(STRIPE_PK);
+    try {
+      const r = await fetch('/create-payment-intent', {
+        method: 'POST', headers: {'content-type':'application/json'},
+        body: JSON.stringify({signup_id: pendingSignupId})
+      });
+      const {client_secret, error} = await r.json();
+      if (error) throw new Error(error);
+
+      elements = stripe.elements({
+        clientSecret: client_secret,
+        appearance: {
+          theme: 'stripe',
+          variables: {
+            colorPrimary: '#b3122b',
+            colorBackground: '#fffdf8',
+            colorText: '#3a1418',
+            colorDanger: '#b3122b',
+            fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+            borderRadius: '9px',
+          }
+        }
+      });
+      const paymentEl = elements.create('payment', {
+        layout: 'tabs',  // shows Apple Pay / Google Pay tabs automatically
+      });
+      paymentEl.mount('#payment-element');
+      document.getElementById('pay-btn').onclick = submitPayment;
+    } catch(e) {
+      document.getElementById('payment-message').textContent = 'Payment unavailable — ' + e.message;
+    }
+  }
+
+  async function submitPayment() {
+    const btn = document.getElementById('pay-btn');
+    const msg = document.getElementById('payment-message');
+    btn.disabled = true; btn.textContent = 'Processing…'; msg.textContent = '';
+
+    const {error} = await stripe.confirmPayment({
+      elements,
+      confirmParams: {return_url: window.location.href},
+      redirect: 'if_required'
+    });
+
+    if (error) {
+      msg.textContent = error.message;
+      btn.disabled = false; btn.textContent = 'Reserve my spot ❤';
+    } else {
+      // Payment succeeded
+      await fetch('/payment-complete', {
+        method: 'POST', headers: {'content-type':'application/json'},
+        body: JSON.stringify({signup_id: pendingSignupId})
+      }).catch(()=>{});
+      skipToConfirmation();
+    }
+  }
+
+  function skipToConfirmation() {
     document.getElementById('pay-step').style.display = 'none';
     document.getElementById('wa').href = pendingWaLink;
     document.getElementById('done').style.display = 'block';
-  });
+  }
 
   document.getElementById('back-link').addEventListener('click', () => {
     document.getElementById('pay-step').style.display = 'none';

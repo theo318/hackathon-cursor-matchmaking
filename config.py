@@ -15,9 +15,8 @@ LLM_BASE_URL = os.getenv("LLM_BASE_URL", "http://localhost:11434/v1")
 LLM_MODEL = os.getenv("LLM_MODEL", "hermes3:8b")
 LLM_API_KEY = os.getenv("LLM_API_KEY", "ollama")
 
-# PayPal — used at the UNLOCK step (downstream of matching), not at signup.
-PAYPAL_ENVIRONMENT = os.getenv("PAYPAL_ENVIRONMENT", "SANDBOX")  # SANDBOX | PRODUCTION
-PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID", "")
-PAYPAL_CLIENT_SECRET = os.getenv("PAYPAL_CLIENT_SECRET", "")
-UNLOCK_PRICE = os.getenv("UNLOCK_PRICE", "0.50")
-UNLOCK_CURRENCY = os.getenv("UNLOCK_CURRENCY", "GBP")
+# Stripe — used at the unlock step after signup
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
+UNLOCK_PRICE_PENCE = int(os.getenv("UNLOCK_PRICE_PENCE", "50"))  # 50p in pence
+UNLOCK_CURRENCY = os.getenv("UNLOCK_CURRENCY", "gbp")

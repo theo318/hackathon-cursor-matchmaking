@@ -1,28 +1,28 @@
-"""Launch-critical funnel.
+"""Liaison funnel.
 
-  GET  /            the landing page
-  POST /signup      capture a lead, return the WhatsApp handoff link
-  GET  /admin       live signup + match feed (watch your launch)
-  POST /match/run   backstage: run the matchmaking brain over current pool
+  GET  /                    landing page (Stripe PK injected)
+  POST /signup              capture lead → return signup_id + wa_link
+  POST /create-payment-intent   Stripe PaymentIntent for 50p
+  GET  /admin               live feed
+  POST /match/run           backstage matchmaking
   GET  /health
-
-Signup does NOT take payment — the £1 unlock happens later, in the WhatsApp
-flow, once a match exists. That keeps signup a 15-second, zero-friction step.
 """
-import json
 import sqlite3
 import time
 import uuid
 import urllib.parse
 import pathlib
 
+import stripe
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 
 import config
 
+stripe.api_key = config.STRIPE_SECRET_KEY
+
 HERE = pathlib.Path(__file__).parent
-app = FastAPI(title=f"{config.BRAND}")
+app = FastAPI(title=config.BRAND)
 
 
 def db():
@@ -40,7 +40,8 @@ def db():
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
-    return (HERE / "index.html").read_text()
+    html = (HERE / "index.html").read_text()
+    return html.replace("__STRIPE_PK__", config.STRIPE_PUBLISHABLE_KEY)
 
 
 @app.post("/signup")
@@ -50,11 +51,12 @@ async def signup(req: Request):
     if "linkedin.com/" not in linkedin.lower():
         return JSONResponse({"error": "valid LinkedIn URL required"}, status_code=400)
     ref = uuid.uuid4().hex[:6].upper()
+    signup_id = "u_" + uuid.uuid4().hex[:12]
     row = {
-        "id": "u_" + uuid.uuid4().hex[:12], "ref": ref, "linkedin": linkedin,
+        "id": signup_id, "ref": ref, "linkedin": linkedin,
         "gender": b.get("gender"), "seeking": b.get("seeking"),
         "location": (b.get("location") or "").strip(),
-        "status": "NEW", "created_at": time.time(),
+        "status": "PENDING_PAYMENT", "created_at": time.time(),
     }
     c = db()
     c.execute("INSERT INTO signups VALUES (:id,:ref,:linkedin,:gender,:seeking,"
@@ -64,7 +66,38 @@ async def signup(req: Request):
     text = f"Hi! I'm ready to meet someone ❤ My code is {ref}"
     wa_link = (f"https://wa.me/{config.CONCIERGE_WA_NUMBER}"
                f"?text={urllib.parse.quote(text)}")
-    return {"ok": True, "ref": ref, "wa_link": wa_link}
+    return {"ok": True, "ref": ref, "signup_id": signup_id, "wa_link": wa_link}
+
+
+@app.post("/create-payment-intent")
+async def create_payment_intent(req: Request):
+    b = await req.json()
+    signup_id = b.get("signup_id", "")
+    try:
+        intent = stripe.PaymentIntent.create(
+            amount=config.UNLOCK_PRICE_PENCE,
+            currency=config.UNLOCK_CURRENCY,
+            metadata={"signup_id": signup_id},
+            automatic_payment_methods={"enabled": True},
+            description="Liaison — date unlock (refunded if no date within 7 days)",
+        )
+        # Mark signup as payment initiated
+        c = db()
+        c.execute("UPDATE signups SET status='PAYMENT_INITIATED' WHERE id=?", (signup_id,))
+        c.commit(); c.close()
+        return {"client_secret": intent.client_secret}
+    except stripe.StripeError as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+
+
+@app.post("/payment-complete")
+async def payment_complete(req: Request):
+    b = await req.json()
+    signup_id = b.get("signup_id", "")
+    c = db()
+    c.execute("UPDATE signups SET status='NEW' WHERE id=?", (signup_id,))
+    c.commit(); c.close()
+    return {"ok": True}
 
 
 @app.post("/match/run")
