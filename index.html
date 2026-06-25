@@ -477,7 +477,7 @@
   });
 
   async function mountPayment() {
-    if (!STRIPE_PK || STRIPE_PK === '__STRIPE_PK__') {
+    if (!STRIPE_PK || !STRIPE_PK.startsWith('pk_')) {
       // No Stripe configured — skip straight through (dev mode)
       document.getElementById('pay-btn').onclick = skipToConfirmation;
       return;
