@@ -12,9 +12,9 @@ import json
 import os
 import time
 import uuid
+from urllib.parse import urlparse
 
-import psycopg2
-import psycopg2.extras
+import pg8000.native
 from openai import OpenAI
 import config
 
@@ -22,9 +22,13 @@ _client = OpenAI(base_url=config.LLM_BASE_URL, api_key=config.LLM_API_KEY)
 
 
 def _db():
-    conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="require")
-    conn.autocommit = False
-    return conn
+    u = urlparse(os.environ["DATABASE_URL"])
+    return pg8000.native.Connection(
+        host=u.hostname, port=u.port or 5432,
+        database=u.path.lstrip("/"),
+        user=u.username, password=u.password,
+        ssl_context=True,
+    )
 
 
 def _orientation_ok(a, b) -> bool:
@@ -67,51 +71,49 @@ Reply with ONLY compact JSON, no markdown:
                 "icebreaker": f"You two might just get on — shall I make the introduction? ({e.__class__.__name__})"}
 
 
-def run() -> dict:
-    """Match every unmatched signup to its best available candidate."""
-    conn = _db()
-    try:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            cur.execute("SELECT * FROM signups WHERE status='NEW' ORDER BY created_at")
-            people = [dict(r) for r in cur.fetchall()]
-            cur.execute("SELECT a, b FROM matches")
-            already = set()
-            for m in cur.fetchall():
-                already.add(m["a"]); already.add(m["b"])
+def _rows_to_dicts(rows, cols):
+    return [dict(zip(cols, r)) for r in rows]
 
-        made = 0
-        used = set(already)
-        for a in people:
-            if a["id"] in used:
-                continue
-            cands = [b for b in people
-                     if b["id"] != a["id"] and b["id"] not in used
-                     and _orientation_ok(a, b) and _same_area(a, b)]
-            if not cands:
-                continue
-            best, best_meta = None, None
-            for b in cands:
-                meta = _hermes_pair(a, b)
-                if best is None or meta["score"] > best_meta["score"]:
-                    best, best_meta = b, meta
-            mid = "m_" + uuid.uuid4().hex[:12]
-            with conn.cursor() as cur:
-                cur.execute(
-                    "INSERT INTO matches VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
-                    (mid, a["id"], best["id"], best_meta["score"], best_meta["why"],
-                     best_meta["icebreaker"], "PENDING_UNLOCK", time.time()))
-                cur.execute(
-                    "UPDATE signups SET status='MATCHED' WHERE id IN (%s,%s)",
-                    (a["id"], best["id"]))
-            conn.commit()
-            used.add(a["id"]); used.add(best["id"]); made += 1
-    finally:
-        conn.close()
+
+def run() -> dict:
+    conn = _db()
+    cols = ["id","ref","linkedin","gender","seeking","location","status","created_at"]
+    people = _rows_to_dicts(
+        conn.run("SELECT * FROM signups WHERE status='NEW' ORDER BY created_at"), cols)
+    already = set()
+    for r in conn.run("SELECT a, b FROM matches"):
+        already.add(r[0]); already.add(r[1])
+
+    made = 0
+    used = set(already)
+    for a in people:
+        if a["id"] in used:
+            continue
+        cands = [b for b in people
+                 if b["id"] != a["id"] and b["id"] not in used
+                 and _orientation_ok(a, b) and _same_area(a, b)]
+        if not cands:
+            continue
+        best, best_meta = None, None
+        for b in cands:
+            meta = _hermes_pair(a, b)
+            if best is None or meta["score"] > best_meta["score"]:
+                best, best_meta = b, meta
+        mid = "m_" + uuid.uuid4().hex[:12]
+        conn.run(
+            "INSERT INTO matches VALUES (:id,:a,:b,:sc,:why,:ice,:st,:ts)",
+            id=mid, a=a["id"], b=best["id"], sc=best_meta["score"],
+            why=best_meta["why"], ice=best_meta["icebreaker"],
+            st="PENDING_UNLOCK", ts=time.time())
+        conn.run("UPDATE signups SET status='MATCHED' WHERE id=:id OR id=:id2",
+                 id=a["id"], id2=best["id"])
+        used.add(a["id"]); used.add(best["id"]); made += 1
+
+    conn.close()
     return {"matches_made": made}
 
 
 def seed_demo(n: int = 6) -> dict:
-    """Drop a few plausible profiles so you can demo matching before real signups land."""
     conn = _db()
     samples = [
         ("https://linkedin.com/in/maya-founder", "woman", "men", "London"),
@@ -121,14 +123,10 @@ def seed_demo(n: int = 6) -> dict:
         ("https://linkedin.com/in/alex-design", "other", "anyone", "London"),
         ("https://linkedin.com/in/sofia-growth", "woman", "men", "London"),
     ]
-    try:
-        for li, g, s, loc in samples[:n]:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "INSERT INTO signups VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
-                    ("u_" + uuid.uuid4().hex[:12], uuid.uuid4().hex[:6].upper(),
-                     li, g, s, loc, "NEW", time.time()))
-        conn.commit()
-    finally:
-        conn.close()
+    for li, g, s, loc in samples[:n]:
+        conn.run(
+            "INSERT INTO signups VALUES (:id,:ref,:li,:g,:s,:loc,:st,:ts)",
+            id="u_"+uuid.uuid4().hex[:12], ref=uuid.uuid4().hex[:6].upper(),
+            li=li, g=g, s=s, loc=loc, st="NEW", ts=time.time())
+    conn.close()
     return {"seeded": min(n, len(samples))}

@@ -4,4 +4,4 @@ openai
 requests
 python-dotenv
 stripe
-psycopg2-binary
+pg8000
