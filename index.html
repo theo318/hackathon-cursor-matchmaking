@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liaison — private matchmaking, hidden in your network</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red-deep:#6e0c1c; --red:#b3122b; --red-bright:#d6213d;
+    --gold:#ecca78; --gold-deep:#c69b3f; --gold-line:#d9b65e;
+    --cream:#fff7ec; --ink:#3a1418; --muted:#9a6a60;
+    --serif:"Playfair Display",Georgia,"Times New Roman",serif;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:var(--sans); color:var(--ink); overflow-x:hidden;
+    background:
+      radial-gradient(120% 90% at 50% 8%, var(--red-bright) 0%, var(--red) 42%, var(--red-deep) 100%) fixed;
+    min-height:100%; display:flex; align-items:center; justify-content:center;
+    padding:32px 18px;
+  }
+  /* floating hearts */
+  .hearts{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .hearts b{position:absolute;bottom:-40px;color:var(--gold);opacity:.0;
+    animation:rise linear infinite;filter:drop-shadow(0 2px 6px rgba(0,0,0,.15))}
+  @keyframes rise{
+    0%{transform:translateY(0) rotate(0);opacity:0}
+    10%{opacity:.55}
+    90%{opacity:.5}
+    100%{transform:translateY(-115vh) rotate(40deg);opacity:0}
+  }
+  @media (prefers-reduced-motion:reduce){ .hearts b{animation:none;opacity:.18} }
+
+  .card{
+    position:relative; z-index:1; width:100%; max-width:480px;
+    background:var(--cream); border-radius:14px; padding:40px 34px 30px;
+    border:1px solid var(--gold-deep);
+    box-shadow:0 28px 70px rgba(40,0,8,.45), 0 2px 0 rgba(255,255,255,.4) inset;
+  }
+  .card::before{ /* gold love-letter hairline */
+    content:""; position:absolute; inset:9px; border:1px solid var(--gold-line);
+    border-radius:9px; pointer-events:none;
+  }
+  .eyebrow{
+    font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--gold-deep); font-weight:600; text-align:center; margin-bottom:18px;
+  }
+  h1{
+    font-family:var(--serif); font-weight:600; font-size:33px; line-height:1.12;
+    text-align:center; margin:0 0 14px; color:var(--ink);
+  }
+  h1 em{font-style:italic; color:var(--red)}
+  .sub{
+    text-align:center; color:var(--muted); font-size:15px; line-height:1.55;
+    margin:0 auto 26px; max-width:38ch;
+  }
+  label{display:block; font-size:12px; font-weight:600; letter-spacing:.04em;
+    text-transform:uppercase; color:var(--muted); margin:0 0 7px}
+  .field{margin-bottom:18px}
+  input[type=url], input[type=text]{
+    width:100%; padding:13px 14px; font-size:15px; font-family:var(--sans);
+    color:var(--ink); background:#fffdf8; border:1px solid #e7d3b6; border-radius:9px;
+    outline:none; transition:border-color .15s, box-shadow .15s;
+  }
+  input:focus{border-color:var(--gold-deep); box-shadow:0 0 0 3px rgba(214,178,94,.25)}
+  .seg{display:flex; gap:8px}
+  .seg button{
+    flex:1; padding:11px 6px; font-size:14px; font-family:var(--sans); cursor:pointer;
+    background:#fffdf8; border:1px solid #e7d3b6; border-radius:9px; color:var(--ink);
+    transition:all .14s;
+  }
+  .seg button[aria-pressed=true]{
+    background:linear-gradient(180deg,#fbe9c4,#f1d291); border-color:var(--gold-deep);
+    color:#5a3a12; font-weight:600; box-shadow:0 1px 0 rgba(255,255,255,.6) inset;
+  }
+  .cta{
+    margin-top:24px; width:100%; padding:16px; cursor:pointer;
+    font-family:var(--serif); font-size:18px; font-weight:600; letter-spacing:.01em;
+    color:#4a0f10; border:none; border-radius:11px;
+    background:linear-gradient(180deg,#f3d792 0%, #e3b85b 55%, #cf9e44 100%);
+    box-shadow:0 8px 22px rgba(120,70,0,.35), 0 1px 0 rgba(255,255,255,.6) inset;
+    transition:transform .12s, box-shadow .12s;
+  }
+  .cta:hover{transform:translateY(-1px); box-shadow:0 12px 28px rgba(120,70,0,.42)}
+  .cta:active{transform:translateY(0)}
+  .cta .h{color:var(--red); font-style:normal}
+  .fine{margin:16px 2px 0; text-align:center; font-size:12px; color:var(--muted); line-height:1.5}
+  .fine b{color:var(--ink); font-weight:600}
+  .err{color:var(--red); font-size:13px; margin-top:10px; text-align:center; min-height:1em}
+
+  /* confirmation */
+  .done{display:none; text-align:center}
+  .done h2{font-family:var(--serif); font-size:28px; color:var(--red); margin:6px 0 12px}
+  .done p{color:var(--ink); font-size:15px; line-height:1.6; margin:0 auto 14px; max-width:36ch}
+  .done .secret{color:var(--muted); font-size:13px; font-style:italic; margin-bottom:22px}
+  .wa{
+    display:inline-block; text-decoration:none; padding:14px 22px; border-radius:11px;
+    font-weight:600; font-size:16px; color:#fff; background:#1faa54;
+    box-shadow:0 8px 20px rgba(20,120,60,.35);
+  }
+  .seal{font-size:40px}
+  @media (max-width:420px){ h1{font-size:28px} .card{padding:32px 22px 26px} }
+</style>
+</head>
+<body>
+<div class="hearts" id="hearts" aria-hidden="true"></div>
+
+<main class="card">
+  <!-- SIGNUP -->
+  <form id="form" novalidate>
+    <div class="eyebrow">Private matchmaking · by introduction only</div>
+    <h1>Your next date is already in your <em>network</em>.</h1>
+    <p class="sub">Drop your LinkedIn. We quietly find someone worth meeting and make one good introduction. No swiping, no cringe.</p>
+
+    <div class="field">
+      <label for="li">Your LinkedIn</label>
+      <input id="li" type="url" inputmode="url" placeholder="linkedin.com/in/you" required>
+    </div>
+
+    <div class="field">
+      <label>I am</label>
+      <div class="seg" id="gender" role="group">
+        <button type="button" data-v="woman" aria-pressed="false">A woman</button>
+        <button type="button" data-v="man" aria-pressed="false">A man</button>
+        <button type="button" data-v="other" aria-pressed="false">Other</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>I'd like to meet</label>
+      <div class="seg" id="seeking" role="group">
+        <button type="button" data-v="women" aria-pressed="false">Women</button>
+        <button type="button" data-v="men" aria-pressed="false">Men</button>
+        <button type="button" data-v="anyone" aria-pressed="false">Anyone</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="loc">Roughly where are you?</label>
+      <input id="loc" type="text" placeholder="London" required>
+    </div>
+
+    <button class="cta" type="submit">Introduce me <span class="h">&#10084;</span></button>
+    <div class="err" id="err"></div>
+    <p class="fine">Free to join. <b>£1 only once we've found someone.</b> And no one ever learns who said no.</p>
+  </form>
+
+  <!-- CONFIRMATION -->
+  <div class="done" id="done">
+    <div class="seal">&#128156;</div>
+    <h2>You're in.</h2>
+    <p>Your matchmaker is already looking. The moment we find someone worth meeting, we'll introduce you.</p>
+    <p class="secret">And remember — no one ever finds out who didn't say yes.</p>
+    <a class="wa" id="wa" href="#">Say hello on WhatsApp →</a>
+  </div>
+</main>
+
+<script>
+  // Fallback WhatsApp concierge number if the backend isn't reachable (demo-safe).
+  const FALLBACK_WA = "447883319107";
+
+  // floating hearts
+  const H = document.getElementById('hearts');
+  const glyphs = ['❤','♥','❤'];
+  for (let i=0;i<22;i++){
+    const b=document.createElement('b');
+    b.textContent=glyphs[i%glyphs.length];
+    const size=12+Math.random()*30;
+    b.style.left=Math.random()*100+'vw';
+    b.style.fontSize=size+'px';
+    b.style.animationDuration=(8+Math.random()*10)+'s';
+    b.style.animationDelay=(-Math.random()*16)+'s';
+    b.style.color = Math.random()<0.5 ? 'var(--gold)' : '#f3b9c4';
+    H.appendChild(b);
+  }
+
+  // segmented controls
+  function seg(id){
+    const box=document.getElementById(id); let val=null;
+    box.addEventListener('click',e=>{
+      const b=e.target.closest('button'); if(!b) return;
+      [...box.children].forEach(x=>x.setAttribute('aria-pressed','false'));
+      b.setAttribute('aria-pressed','true'); val=b.dataset.v;
+    });
+    return ()=>val;
+  }
+  const getGender=seg('gender'), getSeeking=seg('seeking');
+
+  // submit
+  const form=document.getElementById('form'), err=document.getElementById('err');
+  form.addEventListener('submit', async e=>{
+    e.preventDefault(); err.textContent='';
+    const linkedin=document.getElementById('li').value.trim();
+    const location=document.getElementById('loc').value.trim();
+    const gender=getGender(), seeking=getSeeking();
+    if(!/linkedin\.com\/in\//i.test(linkedin) && !/linkedin\.com\//i.test(linkedin)){
+      err.textContent='Pop in your LinkedIn profile link to continue.'; return;
+    }
+    if(!gender){ err.textContent='Tap one for "I am".'; return; }
+    if(!seeking){ err.textContent='Tap who you’d like to meet.'; return; }
+    if(!location){ err.textContent='Where are you roughly based?'; return; }
+
+    let wa = `https://wa.me/${FALLBACK_WA}?text=${encodeURIComponent("Hi! I'm ready to meet someone ❤")}`;
+    try{
+      const r=await fetch('/signup',{method:'POST',headers:{'content-type':'application/json'},
+        body:JSON.stringify({linkedin,gender,seeking,location})});
+      if(r.ok){ const d=await r.json(); if(d.wa_link) wa=d.wa_link; }
+    }catch(_){ /* backend not up — fall back to the demo WhatsApp link */ }
+
+    document.getElementById('wa').href=wa;
+    form.style.display='none';
+    document.getElementById('done').style.display='block';
+  });
+</script>
+</body>
+</html>
