@@ -111,6 +111,13 @@
   .guarantee .icon{font-size:18px;flex-shrink:0;margin-top:1px}
   #payment-element{margin-bottom:16px}
   #payment-message{color:var(--red);font-size:13px;text-align:center;min-height:1.2em;margin-bottom:8px}
+  .promo-toggle{display:block;text-align:center;font-size:12px;color:var(--muted);cursor:pointer;margin-bottom:12px;text-decoration:underline}
+  .promo-box{display:none;margin-bottom:14px}
+  .promo-row{display:flex;gap:8px}
+  .promo-row input{flex:1;padding:11px 13px;font-size:14px;font-family:var(--sans);color:var(--ink);background:#fffdf8;border:1px solid #e7d3b6;border-radius:9px;outline:none;transition:border-color .15s,box-shadow .15s}
+  .promo-row input:focus{border-color:var(--gold-deep);box-shadow:0 0 0 3px rgba(214,178,94,.25)}
+  .promo-apply{padding:11px 16px;font-size:14px;font-family:var(--sans);cursor:pointer;background:linear-gradient(180deg,#fbe9c4,#f1d291);border:1px solid var(--gold-deep);border-radius:9px;color:#5a3a12;font-weight:600;white-space:nowrap}
+  .promo-msg{font-size:12px;margin-top:6px;text-align:center;min-height:1em}
   .pay-btn{
     width:100%;padding:15px;cursor:pointer;
     font-family:var(--serif);font-size:18px;font-weight:600;
@@ -350,6 +357,14 @@
       <div id="payment-element"></div>
       <div id="payment-message"></div>
       <button class="pay-btn" id="pay-btn">Reserve my spot ❤</button>
+      <span class="promo-toggle" id="promo-toggle">Have a promo code?</span>
+      <div class="promo-box" id="promo-box">
+        <div class="promo-row">
+          <input type="text" id="promo-input" placeholder="Enter code" autocomplete="off" spellcheck="false">
+          <button class="promo-apply" id="promo-apply">Apply</button>
+        </div>
+        <div class="promo-msg" id="promo-msg"></div>
+      </div>
       <span class="back-link" id="back-link">← Go back</span>
     </div>
 
@@ -656,6 +671,30 @@
   document.getElementById('back-link').addEventListener('click', () => {
     document.getElementById('pay-step').style.display = 'none';
     form.style.display = 'block';
+  });
+
+  document.getElementById('promo-toggle').addEventListener('click', () => {
+    const box = document.getElementById('promo-box');
+    box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    if (box.style.display === 'block') document.getElementById('promo-input').focus();
+  });
+
+  function applyPromo() {
+    const code = document.getElementById('promo-input').value.trim().toLowerCase();
+    const msg = document.getElementById('promo-msg');
+    if (code === 'loveisintheair') {
+      msg.style.color = '#1a6b3c';
+      msg.textContent = '✓ Code applied — enjoy!';
+      setTimeout(skipToConfirmation, 600);
+    } else {
+      msg.style.color = 'var(--red)';
+      msg.textContent = 'Invalid code.';
+    }
+  }
+
+  document.getElementById('promo-apply').addEventListener('click', applyPromo);
+  document.getElementById('promo-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') applyPromo();
   });
 </script>
 </body>
