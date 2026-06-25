@@ -9,9 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --red-deep:#6e0c1c; --red:#b3122b; --red-bright:#d6213d;
-    --gold:#ecca78; --gold-deep:#c69b3f; --gold-line:#d9b65e;
-    --cream:#fff7ec; --ink:#3a1418; --muted:#9a6a60;
+    --red-deep:#6e0c1c;--red:#b3122b;--red-bright:#d6213d;
+    --gold:#ecca78;--gold-deep:#c69b3f;--gold-line:#d9b65e;
+    --cream:#fff7ec;--ink:#3a1418;--muted:#9a6a60;
     --serif:"Playfair Display",Georgia,"Times New Roman",serif;
     --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   }
@@ -19,58 +19,49 @@
   html{background:var(--red-deep)}
   html,body{margin:0;min-height:100%}
   body{
-    font-family:var(--sans); color:var(--ink); overflow-x:hidden;
-    background:radial-gradient(120% 90% at 50% 8%, var(--red-bright) 0%, var(--red) 42%, var(--red-deep) 100%) fixed;
-    min-height:100vh; display:flex; align-items:center; justify-content:center;
-    padding:32px 18px;
+    font-family:var(--sans);color:var(--ink);overflow-x:hidden;
+    background:radial-gradient(120% 90% at 50% 8%,var(--red-bright) 0%,var(--red) 42%,var(--red-deep) 100%) fixed;
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 18px;
   }
 
-  /* ── floating hearts ── */
+  /* floating hearts */
   .hearts{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
-  .hearts b{position:absolute;bottom:-60px;opacity:0;
-    animation:rise linear infinite;filter:drop-shadow(0 2px 8px rgba(0,0,0,.2))}
+  .hearts b{position:absolute;bottom:-60px;opacity:0;animation:rise linear infinite;filter:drop-shadow(0 2px 8px rgba(0,0,0,.2))}
   @keyframes rise{
     0%{transform:translateY(0) rotate(-8deg) scale(.8);opacity:0}
-    8%{opacity:.7}
-    88%{opacity:.55}
+    8%{opacity:.7}88%{opacity:.55}
     100%{transform:translateY(-120vh) rotate(28deg) scale(1.1);opacity:0}
   }
   @media(prefers-reduced-motion:reduce){.hearts b{animation:none;opacity:.22}}
 
-  /* ── love bot ── */
-  .bot-wrap{display:flex;justify-content:center;margin-bottom:18px;position:relative;z-index:2}
-  .bot{width:72px;height:auto;animation:bob 3s ease-in-out infinite}
-  @keyframes bob{
-    0%,100%{transform:translateY(0)}
-    50%{transform:translateY(-7px)}
+  /* scene: bots flank the card */
+  .scene{
+    position:relative;z-index:1;display:flex;align-items:flex-end;
+    justify-content:center;gap:0;width:100%;max-width:880px;
   }
+  .bot-col{
+    display:none;align-items:flex-end;justify-content:center;flex-shrink:0;width:160px;
+  }
+  @media(min-width:860px){.bot-col{display:flex}}
+  .bot{width:140px;height:auto;animation:bob 3.2s ease-in-out infinite;filter:drop-shadow(0 12px 24px rgba(0,0,0,.5))}
+  .bot-right{transform:scaleX(-1)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .bot-right{animation:bob-r 3.2s ease-in-out infinite}
+  @keyframes bob-r{0%,100%{transform:scaleX(-1) translateY(0)}50%{transform:scaleX(-1) translateY(-10px)}}
 
-  /* ── card ── */
+  /* card */
   .card{
     position:relative;z-index:1;width:100%;max-width:480px;
     background:var(--cream);border-radius:14px;padding:36px 34px 28px;
     border:1px solid var(--gold-deep);
     box-shadow:0 28px 70px rgba(40,0,8,.55),0 2px 0 rgba(255,255,255,.4) inset;
   }
-  .card::before{
-    content:"";position:absolute;inset:9px;border:1px solid var(--gold-line);
-    border-radius:9px;pointer-events:none;
-  }
-  .eyebrow{
-    font-size:11px;letter-spacing:.22em;text-transform:uppercase;
-    color:var(--gold-deep);font-weight:600;text-align:center;margin-bottom:14px;
-  }
-  h1{
-    font-family:var(--serif);font-weight:600;font-size:33px;line-height:1.12;
-    text-align:center;margin:0 0 12px;color:var(--ink);
-  }
+  .card::before{content:"";position:absolute;inset:9px;border:1px solid var(--gold-line);border-radius:9px;pointer-events:none;}
+  .eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-deep);font-weight:600;text-align:center;margin-bottom:14px}
+  h1{font-family:var(--serif);font-weight:600;font-size:30px;line-height:1.12;text-align:center;margin:0 0 12px;color:var(--ink)}
   h1 em{font-style:italic;color:var(--red)}
-  .sub{
-    text-align:center;color:var(--muted);font-size:15px;line-height:1.55;
-    margin:0 auto 22px;max-width:38ch;
-  }
-  label{display:block;font-size:12px;font-weight:600;letter-spacing:.04em;
-    text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+  .sub{text-align:center;color:var(--muted);font-size:15px;line-height:1.55;margin:0 auto 22px;max-width:38ch}
+  label{display:block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
   .field{margin-bottom:16px}
   input[type=url],input[type=text]{
     width:100%;padding:13px 14px;font-size:15px;font-family:var(--sans);
@@ -81,8 +72,7 @@
   .seg{display:flex;gap:8px}
   .seg button{
     flex:1;padding:11px 6px;font-size:14px;font-family:var(--sans);cursor:pointer;
-    background:#fffdf8;border:1px solid #e7d3b6;border-radius:9px;color:var(--ink);
-    transition:all .14s;
+    background:#fffdf8;border:1px solid #e7d3b6;border-radius:9px;color:var(--ink);transition:all .14s;
   }
   .seg button[aria-pressed=true]{
     background:linear-gradient(180deg,#fbe9c4,#f1d291);border-color:var(--gold-deep);
@@ -103,12 +93,9 @@
   .fine b{color:var(--ink);font-weight:600}
   .err{color:var(--red);font-size:13px;margin-top:10px;text-align:center;min-height:1em}
 
-  /* ── payment step ── */
+  /* payment step */
   #pay-step{display:none}
-  .pay-box{
-    background:#fff8f0;border:1px solid var(--gold-line);border-radius:11px;
-    padding:22px 20px;margin-bottom:18px;text-align:center;
-  }
+  .pay-box{background:#fff8f0;border:1px solid var(--gold-line);border-radius:11px;padding:22px 20px;margin-bottom:18px;text-align:center}
   .pay-box .price{font-family:var(--serif);font-size:42px;font-weight:600;color:var(--red);line-height:1}
   .pay-box .price-label{font-size:13px;color:var(--muted);margin:4px 0 14px}
   .pay-box ul{list-style:none;padding:0;margin:0 0 6px;text-align:left;font-size:14px;color:var(--ink)}
@@ -122,143 +109,306 @@
     box-shadow:0 8px 22px rgba(120,70,0,.35);transition:transform .12s,box-shadow .12s;
   }
   .pay-btn:hover{transform:translateY(-1px)}
-  .back-link{display:block;text-align:center;margin-top:12px;font-size:13px;
-    color:var(--muted);cursor:pointer;text-decoration:underline}
+  .back-link{display:block;text-align:center;margin-top:12px;font-size:13px;color:var(--muted);cursor:pointer;text-decoration:underline}
 
-  /* ── confirmation ── */
+  /* confirmation */
   #done{display:none;text-align:center}
   #done h2{font-family:var(--serif);font-size:28px;color:var(--red);margin:6px 0 12px}
   #done p{color:var(--ink);font-size:15px;line-height:1.6;margin:0 auto 14px;max-width:36ch}
   #done .secret{color:var(--muted);font-size:13px;font-style:italic;margin-bottom:22px}
-  .wa{
-    display:inline-block;text-decoration:none;padding:14px 22px;border-radius:11px;
-    font-weight:600;font-size:16px;color:#fff;background:#1faa54;
-    box-shadow:0 8px 20px rgba(20,120,60,.35);
-  }
+  .wa{display:inline-block;text-decoration:none;padding:14px 22px;border-radius:11px;font-weight:600;font-size:16px;color:#fff;background:#1faa54;box-shadow:0 8px 20px rgba(20,120,60,.35)}
   .seal{font-size:40px}
-  @media(max-width:420px){h1{font-size:28px}.card{padding:28px 18px 22px}}
+  @media(max-width:420px){h1{font-size:26px}.card{padding:28px 18px 22px}}
 </style>
 </head>
 <body>
 <div class="hearts" id="hearts" aria-hidden="true"></div>
 
-<main class="card">
+<div class="scene">
 
-  <!-- ── SIGNUP FORM ── -->
-  <form id="form" novalidate>
-    <div class="bot-wrap">
-      <!-- Love Bot SVG: Wall-E body, heart head -->
-      <svg class="bot" viewBox="0 0 72 96" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Love Bot">
-        <!-- antenna -->
-        <line x1="36" y1="4" x2="36" y2="14" stroke="#c69b3f" stroke-width="2.5" stroke-linecap="round"/>
-        <circle cx="36" cy="3" r="3" fill="#e3b85b"/>
-        <!-- heart head -->
-        <path d="M36 28 C36 28 20 18 20 10 C20 5.5 23.5 2 28 2 C31 2 33.5 3.5 36 6 C38.5 3.5 41 2 44 2 C48.5 2 52 5.5 52 10 C52 18 36 28 36 28Z" fill="#d6213d"/>
-        <!-- head highlight -->
-        <ellipse cx="27" cy="8" rx="4" ry="3" fill="#f05070" opacity=".45"/>
-        <!-- eyes on heart -->
-        <circle cx="29" cy="11" r="2.5" fill="white"/>
-        <circle cx="43" cy="11" r="2.5" fill="white"/>
-        <circle cx="30" cy="12" r="1.2" fill="#3a1418"/>
-        <circle cx="44" cy="12" r="1.2" fill="#3a1418"/>
-        <!-- neck -->
-        <rect x="31" y="28" width="10" height="6" rx="3" fill="#c69b3f"/>
-        <!-- body -->
-        <rect x="18" y="34" width="36" height="30" rx="8" fill="#e3b85b"/>
-        <!-- body panel -->
-        <rect x="24" y="39" width="24" height="18" rx="5" fill="#f3d792" opacity=".6"/>
-        <!-- chest heart -->
-        <path d="M36 53 C36 53 29 47 29 43.5 C29 41.5 30.5 40 32.5 40 C34 40 35 40.8 36 42 C37 40.8 38 40 39.5 40 C41.5 40 43 41.5 43 43.5 C43 47 36 53 36 53Z" fill="#d6213d"/>
-        <!-- arms -->
-        <rect x="4" y="36" width="14" height="8" rx="4" fill="#c69b3f"/>
-        <rect x="54" y="36" width="14" height="8" rx="4" fill="#c69b3f"/>
-        <!-- hands -->
-        <circle cx="5" cy="40" r="4" fill="#e3b85b"/>
-        <circle cx="67" cy="40" r="4" fill="#e3b85b"/>
-        <!-- treads / base -->
-        <rect x="14" y="64" width="44" height="14" rx="7" fill="#c69b3f"/>
-        <rect x="10" y="68" width="52" height="10" rx="5" fill="#a07830"/>
-        <!-- tread lines -->
-        <line x1="22" y1="68" x2="22" y2="78" stroke="#c69b3f" stroke-width="1.5"/>
-        <line x1="32" y1="68" x2="32" y2="78" stroke="#c69b3f" stroke-width="1.5"/>
-        <line x1="42" y1="68" x2="42" y2="78" stroke="#c69b3f" stroke-width="1.5"/>
-        <line x1="52" y1="68" x2="52" y2="78" stroke="#c69b3f" stroke-width="1.5"/>
-        <!-- sparkles -->
-        <text x="2" y="36" font-size="10" fill="#ecca78" opacity=".8">✦</text>
-        <text x="60" y="30" font-size="8" fill="#f3b9c4" opacity=".9">✦</text>
-      </svg>
-    </div>
+  <!-- LEFT BOT -->
+  <div class="bot-col">
+    <svg class="bot" viewBox="0 0 100 210" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="bodyG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#a07830"/><stop offset="35%" stop-color="#e3b85b"/><stop offset="70%" stop-color="#f3d792"/><stop offset="100%" stop-color="#c69b3f"/></linearGradient>
+        <linearGradient id="limbG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#8a6020"/><stop offset="40%" stop-color="#c69b3f"/><stop offset="100%" stop-color="#a07830"/></linearGradient>
+        <linearGradient id="panelG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff8e8" stop-opacity=".9"/><stop offset="100%" stop-color="#f0d080" stop-opacity=".5"/></linearGradient>
+        <linearGradient id="heartG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f04060"/><stop offset="100%" stop-color="#8a0820"/></linearGradient>
+        <radialGradient id="eyeGlow" cx="40%" cy="35%" r="60%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#d0e8ff"/></radialGradient>
+        <filter id="glow"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
 
-    <div class="eyebrow">Private matchmaking · by introduction only</div>
-    <h1>Your next date is already in your <em>network</em>.</h1>
-    <p class="sub">Drop your LinkedIn. We quietly find someone worth meeting and make one good introduction. No swiping, no cringe.</p>
+      <!-- antenna -->
+      <line x1="50" y1="2" x2="50" y2="14" stroke="#c69b3f" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="50" cy="2" r="3.5" fill="url(#bodyG)"/>
+      <circle cx="50" cy="2" r="1.5" fill="#ecca78" filter="url(#glow)"/>
 
-    <div class="field">
-      <label for="li">Your LinkedIn</label>
-      <input id="li" type="url" inputmode="url" placeholder="linkedin.com/in/you" required>
-    </div>
+      <!-- HEART HEAD -->
+      <path d="M50 38 C50 38 26 24 26 12 C26 5.8 31 1 37.5 1 C42 1 46 3.5 50 8 C54 3.5 58 1 62.5 1 C69 1 74 5.8 74 12 C74 24 50 38 50 38Z" fill="url(#heartG)"/>
+      <!-- heart sheen -->
+      <path d="M34 7 C36 4 40 2.5 43 3" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round"/>
+      <!-- eyes -->
+      <circle cx="40" cy="14" r="5" fill="url(#eyeGlow)"/>
+      <circle cx="60" cy="14" r="5" fill="url(#eyeGlow)"/>
+      <circle cx="41" cy="15" r="2.5" fill="#1a0810"/>
+      <circle cx="61" cy="15" r="2.5" fill="#1a0810"/>
+      <!-- eye shine -->
+      <circle cx="42" cy="13.5" r="1" fill="white"/>
+      <circle cx="62" cy="13.5" r="1" fill="white"/>
+      <!-- heart tip highlight -->
+      <ellipse cx="50" cy="35" rx="3" ry="1.5" fill="rgba(255,255,255,.15)"/>
 
-    <div class="field">
-      <label>I am</label>
-      <div class="seg" id="gender" role="group">
-        <button type="button" data-v="woman" aria-pressed="false">A woman</button>
-        <button type="button" data-v="man" aria-pressed="false">A man</button>
-        <button type="button" data-v="other" aria-pressed="false">Other</button>
-      </div>
-    </div>
+      <!-- neck -->
+      <rect x="43" y="38" width="14" height="11" rx="4" fill="url(#limbG)"/>
+      <line x1="46" y1="40" x2="46" y2="47" stroke="rgba(0,0,0,.2)" stroke-width="1"/>
+      <line x1="50" y1="40" x2="50" y2="47" stroke="rgba(0,0,0,.2)" stroke-width="1"/>
+      <line x1="54" y1="40" x2="54" y2="47" stroke="rgba(0,0,0,.2)" stroke-width="1"/>
 
-    <div class="field">
-      <label>I'd like to meet</label>
-      <div class="seg" id="seeking" role="group">
-        <button type="button" data-v="women" aria-pressed="false">Women</button>
-        <button type="button" data-v="men" aria-pressed="false">Men</button>
-        <button type="button" data-v="anyone" aria-pressed="false">Anyone</button>
-      </div>
-    </div>
+      <!-- shoulder plates -->
+      <path d="M20 54 C14 52 10 58 12 64 L22 64 L22 54Z" fill="url(#limbG)"/>
+      <path d="M80 54 C86 52 90 58 88 64 L78 64 L78 54Z" fill="url(#limbG)"/>
 
-    <div class="field">
-      <label for="loc">Roughly where are you?</label>
-      <input id="loc" type="text" placeholder="London" required>
-    </div>
+      <!-- TORSO -->
+      <rect x="20" y="49" width="60" height="58" rx="9" fill="url(#bodyG)"/>
+      <!-- torso side shading -->
+      <rect x="20" y="49" width="10" height="58" rx="9" fill="rgba(0,0,0,.15)"/>
+      <rect x="70" y="49" width="10" height="58" rx="9" fill="rgba(0,0,0,.12)"/>
+      <!-- chest panel -->
+      <rect x="27" y="56" width="46" height="42" rx="6" fill="url(#panelG)"/>
+      <!-- panel border -->
+      <rect x="27" y="56" width="46" height="42" rx="6" fill="none" stroke="rgba(180,140,40,.4)" stroke-width="1"/>
+      <!-- chest heart emblem -->
+      <path d="M50 88 C50 88 40 80 40 74 C40 70.7 42.5 68 46 68 C48 68 49.5 69 50 70.5 C50.5 69 52 68 54 68 C57.5 68 60 70.7 60 74 C60 80 50 88 50 88Z" fill="url(#heartG)" filter="url(#glow)"/>
+      <!-- indicator lights -->
+      <circle cx="33" cy="62" r="3" fill="#ff4466" filter="url(#glow)"/>
+      <circle cx="41" cy="62" r="3" fill="#ecca78" filter="url(#glow)"/>
+      <circle cx="33" cy="62" r="1.5" fill="#ffaaaa"/>
+      <circle cx="41" cy="62" r="1.5" fill="#fff8cc"/>
+      <!-- vent lines -->
+      <line x1="60" y1="60" x2="69" y2="60" stroke="rgba(0,0,0,.2)" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="60" y1="63" x2="69" y2="63" stroke="rgba(0,0,0,.2)" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="60" y1="66" x2="69" y2="66" stroke="rgba(0,0,0,.2)" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- rivets -->
+      <circle cx="24" cy="53" r="1.5" fill="#a07830"/><circle cx="76" cy="53" r="1.5" fill="#a07830"/>
+      <circle cx="24" cy="103" r="1.5" fill="#a07830"/><circle cx="76" cy="103" r="1.5" fill="#a07830"/>
 
-    <button class="cta" type="submit">Introduce me <span class="h">&#10084;</span></button>
-    <div class="err" id="err"></div>
-    <p class="fine">Join free. <b>50p unlocks your first date</b> — turn down as many matches as you like first. No one ever learns who said no.</p>
-  </form>
+      <!-- upper arms -->
+      <rect x="5" y="54" width="15" height="38" rx="7" fill="url(#limbG)"/>
+      <rect x="80" y="54" width="15" height="38" rx="7" fill="url(#limbG)"/>
+      <!-- arm shading -->
+      <rect x="5" y="54" width="5" height="38" rx="7" fill="rgba(0,0,0,.15)"/>
+      <rect x="90" y="54" width="5" height="38" rx="7" fill="rgba(0,0,0,.15)"/>
 
-  <!-- ── PAYMENT STEP ── -->
-  <div id="pay-step">
-    <div class="eyebrow">One last thing</div>
-    <h1 style="font-size:26px;margin-bottom:16px">Reserve your spot</h1>
-    <div class="pay-box">
-      <div class="price">50p</div>
-      <div class="price-label">one-time · covers your first date</div>
-      <ul>
-        <li>Turn down as many potential matches as you like — for free</li>
-        <li>50p only when you decide to go on a date</li>
-        <li>No one ever finds out who said no</li>
-        <li>Introduction handled entirely by your concierge</li>
-      </ul>
-    </div>
-    <button class="pay-btn" id="pay-btn">Pay 50p &amp; unlock ❤</button>
-    <span class="back-link" id="back-link">← Go back</span>
+      <!-- elbow joints -->
+      <circle cx="12" cy="92" r="8" fill="url(#bodyG)"/><circle cx="12" cy="92" r="5" fill="url(#limbG)"/>
+      <circle cx="88" cy="92" r="8" fill="url(#bodyG)"/><circle cx="88" cy="92" r="5" fill="url(#limbG)"/>
+
+      <!-- forearms -->
+      <rect x="6" y="92" width="13" height="32" rx="6" fill="url(#limbG)"/>
+      <rect x="81" y="92" width="13" height="32" rx="6" fill="url(#limbG)"/>
+
+      <!-- hands / claws -->
+      <circle cx="12" cy="128" r="7" fill="url(#bodyG)"/>
+      <circle cx="88" cy="128" r="7" fill="url(#bodyG)"/>
+      <line x1="6" y1="125" x2="3" y2="132" stroke="url(#limbG)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="12" y1="124" x2="12" y2="133" stroke="url(#limbG)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="18" y1="125" x2="21" y2="132" stroke="url(#limbG)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="82" y1="125" x2="79" y2="132" stroke="url(#limbG)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="88" y1="124" x2="88" y2="133" stroke="url(#limbG)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="94" y1="125" x2="97" y2="132" stroke="url(#limbG)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- hip belt -->
+      <rect x="19" y="107" width="62" height="14" rx="6" fill="url(#limbG)"/>
+      <rect x="44" y="109" width="12" height="10" rx="3" fill="url(#panelG)"/>
+
+      <!-- upper legs -->
+      <rect x="22" y="121" width="22" height="36" rx="8" fill="url(#bodyG)"/>
+      <rect x="56" y="121" width="22" height="36" rx="8" fill="url(#bodyG)"/>
+      <!-- leg shading -->
+      <rect x="22" y="121" width="7" height="36" rx="8" fill="rgba(0,0,0,.12)"/>
+      <rect x="71" y="121" width="7" height="36" rx="8" fill="rgba(0,0,0,.12)"/>
+
+      <!-- knees -->
+      <circle cx="33" cy="157" r="9" fill="url(#bodyG)"/><circle cx="33" cy="157" r="5.5" fill="url(#limbG)"/>
+      <circle cx="67" cy="157" r="9" fill="url(#bodyG)"/><circle cx="67" cy="157" r="5.5" fill="url(#limbG)"/>
+
+      <!-- lower legs -->
+      <rect x="24" y="157" width="18" height="30" rx="7" fill="url(#limbG)"/>
+      <rect x="58" y="157" width="18" height="30" rx="7" fill="url(#limbG)"/>
+
+      <!-- boots -->
+      <rect x="18" y="182" width="30" height="14" rx="6" fill="url(#bodyG)"/>
+      <rect x="52" y="182" width="30" height="14" rx="6" fill="url(#bodyG)"/>
+      <!-- boot toe -->
+      <ellipse cx="48" cy="196" rx="6" ry="3" fill="rgba(0,0,0,.2)"/>
+      <ellipse cx="82" cy="196" rx="6" ry="3" fill="rgba(0,0,0,.2)"/>
+      <!-- boot highlight -->
+      <rect x="20" y="184" width="26" height="4" rx="3" fill="rgba(255,255,255,.2)"/>
+      <rect x="54" y="184" width="26" height="4" rx="3" fill="rgba(255,255,255,.2)"/>
+
+      <!-- sparkles floating around -->
+      <text x="0" y="46" font-size="10" fill="#ecca78" opacity=".9" font-style="normal">✦</text>
+      <text x="86" y="42" font-size="8" fill="#f3b9c4" opacity=".85" font-style="normal">✦</text>
+      <text x="78" y="140" font-size="7" fill="#ecca78" opacity=".7" font-style="normal">✦</text>
+    </svg>
   </div>
 
-  <!-- ── CONFIRMATION ── -->
-  <div id="done">
-    <div class="seal">&#128156;</div>
-    <h2>You're in.</h2>
-    <p>Your matchmaker is already looking. The moment we find someone worth meeting, we'll introduce you.</p>
-    <p class="secret">And remember — no one ever finds out who didn't say yes.</p>
-    <a class="wa" id="wa" href="#">Say hello on WhatsApp →</a>
+  <!-- CARD -->
+  <main class="card">
+    <form id="form" novalidate>
+      <div class="eyebrow">Private matchmaking · by introduction only</div>
+      <h1>Your next date is already in your <em>network</em>.</h1>
+      <p class="sub">Drop your LinkedIn. We quietly find someone worth meeting and make one good introduction. No swiping, no cringe.</p>
+
+      <div class="field">
+        <label for="li">Your LinkedIn</label>
+        <input id="li" type="url" inputmode="url" placeholder="linkedin.com/in/you" required>
+      </div>
+
+      <div class="field">
+        <label>I am</label>
+        <div class="seg" id="gender" role="group">
+          <button type="button" data-v="woman" aria-pressed="false">A woman</button>
+          <button type="button" data-v="man" aria-pressed="false">A man</button>
+          <button type="button" data-v="other" aria-pressed="false">Other</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>I'd like to meet</label>
+        <div class="seg" id="seeking" role="group">
+          <button type="button" data-v="women" aria-pressed="false">Women</button>
+          <button type="button" data-v="men" aria-pressed="false">Men</button>
+          <button type="button" data-v="anyone" aria-pressed="false">Anyone</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="loc">Roughly where are you?</label>
+        <input id="loc" type="text" placeholder="London" required>
+      </div>
+
+      <button class="cta" type="submit">Introduce me <span class="h">&#10084;</span></button>
+      <div class="err" id="err"></div>
+      <p class="fine">Join free. <b>50p unlocks your first date</b> — turn down as many matches as you like first. No one ever learns who said no.</p>
+    </form>
+
+    <!-- PAYMENT STEP -->
+    <div id="pay-step">
+      <div class="eyebrow">One last thing</div>
+      <h1 style="font-size:26px;margin-bottom:16px">Reserve your spot</h1>
+      <div class="pay-box">
+        <div class="price">50p</div>
+        <div class="price-label">one-time · covers your first date</div>
+        <ul>
+          <li>Turn down as many potential matches as you like — for free</li>
+          <li>50p only when you decide to go on a date</li>
+          <li>No one ever finds out who said no</li>
+          <li>Introduction handled entirely by your concierge</li>
+        </ul>
+      </div>
+      <button class="pay-btn" id="pay-btn">Pay 50p &amp; unlock ❤</button>
+      <span class="back-link" id="back-link">← Go back</span>
+    </div>
+
+    <!-- CONFIRMATION -->
+    <div id="done">
+      <div class="seal">&#128156;</div>
+      <h2>You're in.</h2>
+      <p>Your matchmaker is already looking. The moment we find someone worth meeting, we'll introduce you.</p>
+      <p class="secret">And remember — no one ever finds out who didn't say yes.</p>
+      <a class="wa" id="wa" href="#">Say hello on WhatsApp →</a>
+    </div>
+  </main>
+
+  <!-- RIGHT BOT (mirrored) -->
+  <div class="bot-col">
+    <svg class="bot bot-right" viewBox="0 0 100 210" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="bodyG2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#a07830"/><stop offset="35%" stop-color="#e3b85b"/><stop offset="70%" stop-color="#f3d792"/><stop offset="100%" stop-color="#c69b3f"/></linearGradient>
+        <linearGradient id="limbG2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#8a6020"/><stop offset="40%" stop-color="#c69b3f"/><stop offset="100%" stop-color="#a07830"/></linearGradient>
+        <linearGradient id="panelG2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff8e8" stop-opacity=".9"/><stop offset="100%" stop-color="#f0d080" stop-opacity=".5"/></linearGradient>
+        <linearGradient id="heartG2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f04060"/><stop offset="100%" stop-color="#8a0820"/></linearGradient>
+        <radialGradient id="eyeGlow2" cx="40%" cy="35%" r="60%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#d0e8ff"/></radialGradient>
+        <filter id="glow2"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <line x1="50" y1="2" x2="50" y2="14" stroke="#c69b3f" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="50" cy="2" r="3.5" fill="url(#bodyG2)"/>
+      <circle cx="50" cy="2" r="1.5" fill="#ecca78" filter="url(#glow2)"/>
+      <path d="M50 38 C50 38 26 24 26 12 C26 5.8 31 1 37.5 1 C42 1 46 3.5 50 8 C54 3.5 58 1 62.5 1 C69 1 74 5.8 74 12 C74 24 50 38 50 38Z" fill="url(#heartG2)"/>
+      <path d="M34 7 C36 4 40 2.5 43 3" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="40" cy="14" r="5" fill="url(#eyeGlow2)"/>
+      <circle cx="60" cy="14" r="5" fill="url(#eyeGlow2)"/>
+      <circle cx="41" cy="15" r="2.5" fill="#1a0810"/>
+      <circle cx="61" cy="15" r="2.5" fill="#1a0810"/>
+      <circle cx="42" cy="13.5" r="1" fill="white"/>
+      <circle cx="62" cy="13.5" r="1" fill="white"/>
+      <ellipse cx="50" cy="35" rx="3" ry="1.5" fill="rgba(255,255,255,.15)"/>
+      <rect x="43" y="38" width="14" height="11" rx="4" fill="url(#limbG2)"/>
+      <line x1="46" y1="40" x2="46" y2="47" stroke="rgba(0,0,0,.2)" stroke-width="1"/>
+      <line x1="50" y1="40" x2="50" y2="47" stroke="rgba(0,0,0,.2)" stroke-width="1"/>
+      <line x1="54" y1="40" x2="54" y2="47" stroke="rgba(0,0,0,.2)" stroke-width="1"/>
+      <path d="M20 54 C14 52 10 58 12 64 L22 64 L22 54Z" fill="url(#limbG2)"/>
+      <path d="M80 54 C86 52 90 58 88 64 L78 64 L78 54Z" fill="url(#limbG2)"/>
+      <rect x="20" y="49" width="60" height="58" rx="9" fill="url(#bodyG2)"/>
+      <rect x="20" y="49" width="10" height="58" rx="9" fill="rgba(0,0,0,.15)"/>
+      <rect x="70" y="49" width="10" height="58" rx="9" fill="rgba(0,0,0,.12)"/>
+      <rect x="27" y="56" width="46" height="42" rx="6" fill="url(#panelG2)"/>
+      <rect x="27" y="56" width="46" height="42" rx="6" fill="none" stroke="rgba(180,140,40,.4)" stroke-width="1"/>
+      <path d="M50 88 C50 88 40 80 40 74 C40 70.7 42.5 68 46 68 C48 68 49.5 69 50 70.5 C50.5 69 52 68 54 68 C57.5 68 60 70.7 60 74 C60 80 50 88 50 88Z" fill="url(#heartG2)" filter="url(#glow2)"/>
+      <circle cx="33" cy="62" r="3" fill="#ecca78" filter="url(#glow2)"/>
+      <circle cx="41" cy="62" r="3" fill="#ff4466" filter="url(#glow2)"/>
+      <circle cx="33" cy="62" r="1.5" fill="#fff8cc"/>
+      <circle cx="41" cy="62" r="1.5" fill="#ffaaaa"/>
+      <line x1="60" y1="60" x2="69" y2="60" stroke="rgba(0,0,0,.2)" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="60" y1="63" x2="69" y2="63" stroke="rgba(0,0,0,.2)" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="60" y1="66" x2="69" y2="66" stroke="rgba(0,0,0,.2)" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="24" cy="53" r="1.5" fill="#a07830"/><circle cx="76" cy="53" r="1.5" fill="#a07830"/>
+      <circle cx="24" cy="103" r="1.5" fill="#a07830"/><circle cx="76" cy="103" r="1.5" fill="#a07830"/>
+      <rect x="5" y="54" width="15" height="38" rx="7" fill="url(#limbG2)"/>
+      <rect x="80" y="54" width="15" height="38" rx="7" fill="url(#limbG2)"/>
+      <rect x="5" y="54" width="5" height="38" rx="7" fill="rgba(0,0,0,.15)"/>
+      <rect x="90" y="54" width="5" height="38" rx="7" fill="rgba(0,0,0,.15)"/>
+      <circle cx="12" cy="92" r="8" fill="url(#bodyG2)"/><circle cx="12" cy="92" r="5" fill="url(#limbG2)"/>
+      <circle cx="88" cy="92" r="8" fill="url(#bodyG2)"/><circle cx="88" cy="92" r="5" fill="url(#limbG2)"/>
+      <rect x="6" y="92" width="13" height="32" rx="6" fill="url(#limbG2)"/>
+      <rect x="81" y="92" width="13" height="32" rx="6" fill="url(#limbG2)"/>
+      <circle cx="12" cy="128" r="7" fill="url(#bodyG2)"/>
+      <circle cx="88" cy="128" r="7" fill="url(#bodyG2)"/>
+      <line x1="6" y1="125" x2="3" y2="132" stroke="url(#limbG2)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="12" y1="124" x2="12" y2="133" stroke="url(#limbG2)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="18" y1="125" x2="21" y2="132" stroke="url(#limbG2)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="82" y1="125" x2="79" y2="132" stroke="url(#limbG2)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="88" y1="124" x2="88" y2="133" stroke="url(#limbG2)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="94" y1="125" x2="97" y2="132" stroke="url(#limbG2)" stroke-width="3" stroke-linecap="round"/>
+      <rect x="19" y="107" width="62" height="14" rx="6" fill="url(#limbG2)"/>
+      <rect x="44" y="109" width="12" height="10" rx="3" fill="url(#panelG2)"/>
+      <rect x="22" y="121" width="22" height="36" rx="8" fill="url(#bodyG2)"/>
+      <rect x="56" y="121" width="22" height="36" rx="8" fill="url(#bodyG2)"/>
+      <rect x="22" y="121" width="7" height="36" rx="8" fill="rgba(0,0,0,.12)"/>
+      <rect x="71" y="121" width="7" height="36" rx="8" fill="rgba(0,0,0,.12)"/>
+      <circle cx="33" cy="157" r="9" fill="url(#bodyG2)"/><circle cx="33" cy="157" r="5.5" fill="url(#limbG2)"/>
+      <circle cx="67" cy="157" r="9" fill="url(#bodyG2)"/><circle cx="67" cy="157" r="5.5" fill="url(#limbG2)"/>
+      <rect x="24" y="157" width="18" height="30" rx="7" fill="url(#limbG2)"/>
+      <rect x="58" y="157" width="18" height="30" rx="7" fill="url(#limbG2)"/>
+      <rect x="18" y="182" width="30" height="14" rx="6" fill="url(#bodyG2)"/>
+      <rect x="52" y="182" width="30" height="14" rx="6" fill="url(#bodyG2)"/>
+      <ellipse cx="48" cy="196" rx="6" ry="3" fill="rgba(0,0,0,.2)"/>
+      <ellipse cx="82" cy="196" rx="6" ry="3" fill="rgba(0,0,0,.2)"/>
+      <rect x="20" y="184" width="26" height="4" rx="3" fill="rgba(255,255,255,.2)"/>
+      <rect x="54" y="184" width="26" height="4" rx="3" fill="rgba(255,255,255,.2)"/>
+      <text x="0" y="46" font-size="10" fill="#ecca78" opacity=".9" font-style="normal">✦</text>
+      <text x="86" y="42" font-size="8" fill="#f3b9c4" opacity=".85" font-style="normal">✦</text>
+      <text x="2" y="140" font-size="7" fill="#ecca78" opacity=".7" font-style="normal">✦</text>
+    </svg>
   </div>
 
-</main>
+</div><!-- /scene -->
 
 <script>
   const FALLBACK_WA = "447883319107";
 
-  // ── floating hearts (more of them, varied sizes & glyphs) ──
+  // floating hearts
   const H = document.getElementById('hearts');
   const glyphs = ['❤','♥','❤','💛','❤','♥','✦','❤'];
   const colors = ['var(--gold)','#f3b9c4','#d6213d','var(--gold)','#ecca78','#f3b9c4','var(--gold)'];
@@ -266,18 +416,10 @@
     const b = document.createElement('b');
     b.textContent = glyphs[i % glyphs.length];
     const size = 10 + Math.random() * 36;
-    b.style.cssText = `
-      left:${Math.random()*100}vw;
-      font-size:${size}px;
-      animation-duration:${7 + Math.random()*12}s;
-      animation-delay:${-Math.random()*20}s;
-      color:${colors[i % colors.length]};
-      font-style:normal;
-    `;
+    b.style.cssText = `left:${Math.random()*100}vw;font-size:${size}px;animation-duration:${7+Math.random()*12}s;animation-delay:${-Math.random()*20}s;color:${colors[i%colors.length]};font-style:normal;`;
     H.appendChild(b);
   }
 
-  // ── segmented controls ──
   function seg(id) {
     const box = document.getElementById(id); let val = null;
     box.addEventListener('click', e => {
@@ -288,11 +430,8 @@
     return () => val;
   }
   const getGender = seg('gender'), getSeeking = seg('seeking');
-
-  // ── state ──
   let pendingWaLink = null;
 
-  // ── form submit → validate → show pay step ──
   const form = document.getElementById('form');
   const err  = document.getElementById('err');
   form.addEventListener('submit', async e => {
@@ -300,21 +439,14 @@
     const linkedin = document.getElementById('li').value.trim();
     const location = document.getElementById('loc').value.trim();
     const gender = getGender(), seeking = getSeeking();
-    if (!/linkedin\.com\//i.test(linkedin)) {
-      err.textContent = 'Pop in your LinkedIn profile link to continue.'; return;
-    }
+    if (!/linkedin\.com\//i.test(linkedin)) { err.textContent = 'Pop in your LinkedIn profile link to continue.'; return; }
     if (!gender)   { err.textContent = 'Tap one for "I am".'; return; }
-    if (!seeking)  { err.textContent = 'Tap who you\'d like to meet.'; return; }
+    if (!seeking)  { err.textContent = "Tap who you'd like to meet."; return; }
     if (!location) { err.textContent = 'Where are you roughly based?'; return; }
 
-    // capture lead immediately (no payment yet)
     pendingWaLink = `https://wa.me/${FALLBACK_WA}?text=${encodeURIComponent("Hi! I'm ready to meet someone ❤")}`;
     try {
-      const r = await fetch('/signup', {
-        method: 'POST',
-        headers: {'content-type': 'application/json'},
-        body: JSON.stringify({linkedin, gender, seeking, location})
-      });
+      const r = await fetch('/signup', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({linkedin,gender,seeking,location})});
       if (r.ok) { const d = await r.json(); if (d.wa_link) pendingWaLink = d.wa_link; }
     } catch(_) {}
 
@@ -322,15 +454,12 @@
     document.getElementById('pay-step').style.display = 'block';
   });
 
-  // ── pay button → show confirmation ──
   document.getElementById('pay-btn').addEventListener('click', () => {
-    // PayPal integration wired here later; for now advance to confirmation
     document.getElementById('pay-step').style.display = 'none';
     document.getElementById('wa').href = pendingWaLink;
     document.getElementById('done').style.display = 'block';
   });
 
-  // ── back link ──
   document.getElementById('back-link').addEventListener('click', () => {
     document.getElementById('pay-step').style.display = 'none';
     form.style.display = 'block';
