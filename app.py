@@ -1,18 +1,21 @@
 """Liaison funnel.
 
-  GET  /                    landing page (Stripe PK injected)
-  POST /signup              capture lead → return signup_id + wa_link
+  GET  /                        landing page (Stripe PK injected)
+  POST /signup                  capture lead → return signup_id + wa_link
   POST /create-payment-intent   Stripe PaymentIntent for 50p
-  GET  /admin               live feed
-  POST /match/run           backstage matchmaking
+  POST /payment-complete        mark signup as paid/active
+  GET  /admin                   live feed
+  POST /match/run               backstage matchmaking
   GET  /health
 """
-import sqlite3
+import os
 import time
 import uuid
 import urllib.parse
 import pathlib
 
+import psycopg2
+import psycopg2.extras
 import stripe
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -26,16 +29,45 @@ app = FastAPI(title=config.BRAND)
 
 
 def db():
-    c = sqlite3.connect(config.DB_PATH)
-    c.row_factory = sqlite3.Row
-    c.execute("""CREATE TABLE IF NOT EXISTS signups(
-        id TEXT PRIMARY KEY, ref TEXT, linkedin TEXT, gender TEXT, seeking TEXT,
-        location TEXT, status TEXT, created_at REAL)""")
-    c.execute("""CREATE TABLE IF NOT EXISTS matches(
-        id TEXT PRIMARY KEY, a TEXT, b TEXT, score INTEGER, why TEXT,
-        icebreaker TEXT, status TEXT, created_at REAL)""")
-    c.commit()
-    return c
+    conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="require")
+    conn.autocommit = False
+    return conn
+
+
+def ensure_tables(conn):
+    with conn.cursor() as cur:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS signups (
+                id TEXT PRIMARY KEY,
+                ref TEXT,
+                linkedin TEXT,
+                gender TEXT,
+                seeking TEXT,
+                location TEXT,
+                status TEXT,
+                created_at DOUBLE PRECISION
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS matches (
+                id TEXT PRIMARY KEY,
+                a TEXT,
+                b TEXT,
+                score INTEGER,
+                why TEXT,
+                icebreaker TEXT,
+                status TEXT,
+                created_at DOUBLE PRECISION
+            )
+        """)
+    conn.commit()
+
+
+@app.on_event("startup")
+async def startup():
+    conn = db()
+    ensure_tables(conn)
+    conn.close()
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -50,18 +82,21 @@ async def signup(req: Request):
     linkedin = (b.get("linkedin") or "").strip()
     if "linkedin.com/" not in linkedin.lower():
         return JSONResponse({"error": "valid LinkedIn URL required"}, status_code=400)
+
     ref = uuid.uuid4().hex[:6].upper()
     signup_id = "u_" + uuid.uuid4().hex[:12]
-    row = {
-        "id": signup_id, "ref": ref, "linkedin": linkedin,
-        "gender": b.get("gender"), "seeking": b.get("seeking"),
-        "location": (b.get("location") or "").strip(),
-        "status": "PENDING_PAYMENT", "created_at": time.time(),
-    }
-    c = db()
-    c.execute("INSERT INTO signups VALUES (:id,:ref,:linkedin,:gender,:seeking,"
-              ":location,:status,:created_at)", row)
-    c.commit(); c.close()
+
+    conn = db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO signups VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+                (signup_id, ref, linkedin, b.get("gender"), b.get("seeking"),
+                 (b.get("location") or "").strip(), "PENDING_PAYMENT", time.time())
+            )
+        conn.commit()
+    finally:
+        conn.close()
 
     text = f"Hi! I'm ready to meet someone ❤ My code is {ref}"
     wa_link = (f"https://wa.me/{config.CONCIERGE_WA_NUMBER}"
@@ -81,10 +116,13 @@ async def create_payment_intent(req: Request):
             automatic_payment_methods={"enabled": True},
             description="Liaison — date unlock (refunded if no date within 7 days)",
         )
-        # Mark signup as payment initiated
-        c = db()
-        c.execute("UPDATE signups SET status='PAYMENT_INITIATED' WHERE id=?", (signup_id,))
-        c.commit(); c.close()
+        conn = db()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("UPDATE signups SET status='PAYMENT_INITIATED' WHERE id=%s", (signup_id,))
+            conn.commit()
+        finally:
+            conn.close()
         return {"client_secret": intent.client_secret}
     except stripe.StripeError as e:
         return JSONResponse({"error": str(e)}, status_code=400)
@@ -94,9 +132,13 @@ async def create_payment_intent(req: Request):
 async def payment_complete(req: Request):
     b = await req.json()
     signup_id = b.get("signup_id", "")
-    c = db()
-    c.execute("UPDATE signups SET status='NEW' WHERE id=?", (signup_id,))
-    c.commit(); c.close()
+    conn = db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE signups SET status='NEW' WHERE id=%s", (signup_id,))
+        conn.commit()
+    finally:
+        conn.close()
     return {"ok": True}
 
 
@@ -113,10 +155,16 @@ async def health():
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin():
-    c = db()
-    su = c.execute("SELECT * FROM signups ORDER BY created_at DESC").fetchall()
-    ms = c.execute("SELECT * FROM matches ORDER BY created_at DESC").fetchall()
-    c.close()
+    conn = db()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT * FROM signups ORDER BY created_at DESC")
+            su = cur.fetchall()
+            cur.execute("SELECT * FROM matches ORDER BY created_at DESC")
+            ms = cur.fetchall()
+    finally:
+        conn.close()
+
     rows = "".join(
         f"<tr><td>{s['ref']}</td><td><a href='{s['linkedin']}' target='_blank'>link</a></td>"
         f"<td>{s['gender']}&rarr;{s['seeking']}</td><td>{s['location']}</td>"
@@ -124,6 +172,7 @@ async def admin():
     mrows = "".join(
         f"<tr><td>{m['score']}</td><td>{m['why']}</td><td>{m['icebreaker']}</td>"
         f"<td>{m['status']}</td></tr>" for m in ms)
+
     return f"""<html><head><meta charset=utf-8><title>admin</title>
     <style>body{{font:14px system-ui;margin:24px;color:#222}}
     h2{{margin-top:28px}} table{{border-collapse:collapse;width:100%}}

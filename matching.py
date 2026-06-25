@@ -9,10 +9,12 @@ Two stages:
 Run it from the admin page button, on a timer, or `python -c "import matching;matching.run()"`.
 """
 import json
-import sqlite3
+import os
 import time
 import uuid
 
+import psycopg2
+import psycopg2.extras
 from openai import OpenAI
 import config
 
@@ -20,9 +22,9 @@ _client = OpenAI(base_url=config.LLM_BASE_URL, api_key=config.LLM_API_KEY)
 
 
 def _db():
-    c = sqlite3.connect(config.DB_PATH)
-    c.row_factory = sqlite3.Row
-    return c
+    conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode="require")
+    conn.autocommit = False
+    return conn
 
 
 def _orientation_ok(a, b) -> bool:
@@ -67,44 +69,50 @@ Reply with ONLY compact JSON, no markdown:
 
 def run() -> dict:
     """Match every unmatched signup to its best available candidate."""
-    c = _db()
-    people = [dict(r) for r in c.execute(
-        "SELECT * FROM signups WHERE status='NEW' ORDER BY created_at").fetchall()]
-    already = set()
-    for m in c.execute("SELECT a,b FROM matches").fetchall():
-        already.add(m["a"]); already.add(m["b"])
+    conn = _db()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT * FROM signups WHERE status='NEW' ORDER BY created_at")
+            people = [dict(r) for r in cur.fetchall()]
+            cur.execute("SELECT a, b FROM matches")
+            already = set()
+            for m in cur.fetchall():
+                already.add(m["a"]); already.add(m["b"])
 
-    made = 0
-    used = set(already)
-    for a in people:
-        if a["id"] in used:
-            continue
-        # candidates: not used, mutually compatible, same area
-        cands = [b for b in people
-                 if b["id"] != a["id"] and b["id"] not in used
-                 and _orientation_ok(a, b) and _same_area(a, b)]
-        if not cands:
-            continue
-        # score each, pick best
-        best, best_meta = None, None
-        for b in cands:
-            meta = _hermes_pair(a, b)
-            if best is None or meta["score"] > best_meta["score"]:
-                best, best_meta = b, meta
-        mid = "m_" + uuid.uuid4().hex[:12]
-        c.execute("INSERT INTO matches VALUES (?,?,?,?,?,?,?,?)",
-                  (mid, a["id"], best["id"], best_meta["score"], best_meta["why"],
-                   best_meta["icebreaker"], "PENDING_UNLOCK", time.time()))
-        c.execute("UPDATE signups SET status='MATCHED' WHERE id IN (?,?)", (a["id"], best["id"]))
-        used.add(a["id"]); used.add(best["id"]); made += 1
-    c.commit(); c.close()
+        made = 0
+        used = set(already)
+        for a in people:
+            if a["id"] in used:
+                continue
+            cands = [b for b in people
+                     if b["id"] != a["id"] and b["id"] not in used
+                     and _orientation_ok(a, b) and _same_area(a, b)]
+            if not cands:
+                continue
+            best, best_meta = None, None
+            for b in cands:
+                meta = _hermes_pair(a, b)
+                if best is None or meta["score"] > best_meta["score"]:
+                    best, best_meta = b, meta
+            mid = "m_" + uuid.uuid4().hex[:12]
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO matches VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+                    (mid, a["id"], best["id"], best_meta["score"], best_meta["why"],
+                     best_meta["icebreaker"], "PENDING_UNLOCK", time.time()))
+                cur.execute(
+                    "UPDATE signups SET status='MATCHED' WHERE id IN (%s,%s)",
+                    (a["id"], best["id"]))
+            conn.commit()
+            used.add(a["id"]); used.add(best["id"]); made += 1
+    finally:
+        conn.close()
     return {"matches_made": made}
 
 
 def seed_demo(n: int = 6) -> dict:
     """Drop a few plausible profiles so you can demo matching before real signups land."""
-    import random
-    c = _db()
+    conn = _db()
     samples = [
         ("https://linkedin.com/in/maya-founder", "woman", "men", "London"),
         ("https://linkedin.com/in/tomdev", "man", "women", "London"),
@@ -113,9 +121,14 @@ def seed_demo(n: int = 6) -> dict:
         ("https://linkedin.com/in/alex-design", "other", "anyone", "London"),
         ("https://linkedin.com/in/sofia-growth", "woman", "men", "London"),
     ]
-    for li, g, s, loc in samples[:n]:
-        c.execute("INSERT INTO signups VALUES (?,?,?,?,?,?,?,?)",
-                  ("u_" + uuid.uuid4().hex[:12], uuid.uuid4().hex[:6].upper(),
-                   li, g, s, loc, "NEW", time.time()))
-    c.commit(); c.close()
+    try:
+        for li, g, s, loc in samples[:n]:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO signups VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+                    ("u_" + uuid.uuid4().hex[:12], uuid.uuid4().hex[:6].upper(),
+                     li, g, s, loc, "NEW", time.time()))
+        conn.commit()
+    finally:
+        conn.close()
     return {"seeded": min(n, len(samples))}
