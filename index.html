@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="background:#6e0c1c">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,103 +16,179 @@
     --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%}
+  html{background:var(--red-deep)}
+  html,body{margin:0;min-height:100%}
   body{
     font-family:var(--sans); color:var(--ink); overflow-x:hidden;
-    background:
-      radial-gradient(120% 90% at 50% 8%, var(--red-bright) 0%, var(--red) 42%, var(--red-deep) 100%) fixed;
-    min-height:100%; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(120% 90% at 50% 8%, var(--red-bright) 0%, var(--red) 42%, var(--red-deep) 100%) fixed;
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
     padding:32px 18px;
   }
-  /* floating hearts */
-  .hearts{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
-  .hearts b{position:absolute;bottom:-40px;color:var(--gold);opacity:.0;
-    animation:rise linear infinite;filter:drop-shadow(0 2px 6px rgba(0,0,0,.15))}
-  @keyframes rise{
-    0%{transform:translateY(0) rotate(0);opacity:0}
-    10%{opacity:.55}
-    90%{opacity:.5}
-    100%{transform:translateY(-115vh) rotate(40deg);opacity:0}
-  }
-  @media (prefers-reduced-motion:reduce){ .hearts b{animation:none;opacity:.18} }
 
-  .card{
-    position:relative; z-index:1; width:100%; max-width:480px;
-    background:var(--cream); border-radius:14px; padding:40px 34px 30px;
-    border:1px solid var(--gold-deep);
-    box-shadow:0 28px 70px rgba(40,0,8,.45), 0 2px 0 rgba(255,255,255,.4) inset;
+  /* ── floating hearts ── */
+  .hearts{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .hearts b{position:absolute;bottom:-60px;opacity:0;
+    animation:rise linear infinite;filter:drop-shadow(0 2px 8px rgba(0,0,0,.2))}
+  @keyframes rise{
+    0%{transform:translateY(0) rotate(-8deg) scale(.8);opacity:0}
+    8%{opacity:.7}
+    88%{opacity:.55}
+    100%{transform:translateY(-120vh) rotate(28deg) scale(1.1);opacity:0}
   }
-  .card::before{ /* gold love-letter hairline */
-    content:""; position:absolute; inset:9px; border:1px solid var(--gold-line);
-    border-radius:9px; pointer-events:none;
+  @media(prefers-reduced-motion:reduce){.hearts b{animation:none;opacity:.22}}
+
+  /* ── love bot ── */
+  .bot-wrap{display:flex;justify-content:center;margin-bottom:18px;position:relative;z-index:2}
+  .bot{width:72px;height:auto;animation:bob 3s ease-in-out infinite}
+  @keyframes bob{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-7px)}
+  }
+
+  /* ── card ── */
+  .card{
+    position:relative;z-index:1;width:100%;max-width:480px;
+    background:var(--cream);border-radius:14px;padding:36px 34px 28px;
+    border:1px solid var(--gold-deep);
+    box-shadow:0 28px 70px rgba(40,0,8,.55),0 2px 0 rgba(255,255,255,.4) inset;
+  }
+  .card::before{
+    content:"";position:absolute;inset:9px;border:1px solid var(--gold-line);
+    border-radius:9px;pointer-events:none;
   }
   .eyebrow{
-    font-size:11px; letter-spacing:.22em; text-transform:uppercase;
-    color:var(--gold-deep); font-weight:600; text-align:center; margin-bottom:18px;
+    font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--gold-deep);font-weight:600;text-align:center;margin-bottom:14px;
   }
   h1{
-    font-family:var(--serif); font-weight:600; font-size:33px; line-height:1.12;
-    text-align:center; margin:0 0 14px; color:var(--ink);
+    font-family:var(--serif);font-weight:600;font-size:33px;line-height:1.12;
+    text-align:center;margin:0 0 12px;color:var(--ink);
   }
-  h1 em{font-style:italic; color:var(--red)}
+  h1 em{font-style:italic;color:var(--red)}
   .sub{
-    text-align:center; color:var(--muted); font-size:15px; line-height:1.55;
-    margin:0 auto 26px; max-width:38ch;
+    text-align:center;color:var(--muted);font-size:15px;line-height:1.55;
+    margin:0 auto 22px;max-width:38ch;
   }
-  label{display:block; font-size:12px; font-weight:600; letter-spacing:.04em;
-    text-transform:uppercase; color:var(--muted); margin:0 0 7px}
-  .field{margin-bottom:18px}
-  input[type=url], input[type=text]{
-    width:100%; padding:13px 14px; font-size:15px; font-family:var(--sans);
-    color:var(--ink); background:#fffdf8; border:1px solid #e7d3b6; border-radius:9px;
-    outline:none; transition:border-color .15s, box-shadow .15s;
+  label{display:block;font-size:12px;font-weight:600;letter-spacing:.04em;
+    text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+  .field{margin-bottom:16px}
+  input[type=url],input[type=text]{
+    width:100%;padding:13px 14px;font-size:15px;font-family:var(--sans);
+    color:var(--ink);background:#fffdf8;border:1px solid #e7d3b6;border-radius:9px;
+    outline:none;transition:border-color .15s,box-shadow .15s;
   }
-  input:focus{border-color:var(--gold-deep); box-shadow:0 0 0 3px rgba(214,178,94,.25)}
-  .seg{display:flex; gap:8px}
+  input:focus{border-color:var(--gold-deep);box-shadow:0 0 0 3px rgba(214,178,94,.25)}
+  .seg{display:flex;gap:8px}
   .seg button{
-    flex:1; padding:11px 6px; font-size:14px; font-family:var(--sans); cursor:pointer;
-    background:#fffdf8; border:1px solid #e7d3b6; border-radius:9px; color:var(--ink);
+    flex:1;padding:11px 6px;font-size:14px;font-family:var(--sans);cursor:pointer;
+    background:#fffdf8;border:1px solid #e7d3b6;border-radius:9px;color:var(--ink);
     transition:all .14s;
   }
   .seg button[aria-pressed=true]{
-    background:linear-gradient(180deg,#fbe9c4,#f1d291); border-color:var(--gold-deep);
-    color:#5a3a12; font-weight:600; box-shadow:0 1px 0 rgba(255,255,255,.6) inset;
+    background:linear-gradient(180deg,#fbe9c4,#f1d291);border-color:var(--gold-deep);
+    color:#5a3a12;font-weight:600;box-shadow:0 1px 0 rgba(255,255,255,.6) inset;
   }
   .cta{
-    margin-top:24px; width:100%; padding:16px; cursor:pointer;
-    font-family:var(--serif); font-size:18px; font-weight:600; letter-spacing:.01em;
-    color:#4a0f10; border:none; border-radius:11px;
-    background:linear-gradient(180deg,#f3d792 0%, #e3b85b 55%, #cf9e44 100%);
-    box-shadow:0 8px 22px rgba(120,70,0,.35), 0 1px 0 rgba(255,255,255,.6) inset;
-    transition:transform .12s, box-shadow .12s;
+    margin-top:22px;width:100%;padding:16px;cursor:pointer;
+    font-family:var(--serif);font-size:18px;font-weight:600;letter-spacing:.01em;
+    color:#4a0f10;border:none;border-radius:11px;
+    background:linear-gradient(180deg,#f3d792 0%,#e3b85b 55%,#cf9e44 100%);
+    box-shadow:0 8px 22px rgba(120,70,0,.35),0 1px 0 rgba(255,255,255,.6) inset;
+    transition:transform .12s,box-shadow .12s;
   }
-  .cta:hover{transform:translateY(-1px); box-shadow:0 12px 28px rgba(120,70,0,.42)}
+  .cta:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(120,70,0,.42)}
   .cta:active{transform:translateY(0)}
-  .cta .h{color:var(--red); font-style:normal}
-  .fine{margin:16px 2px 0; text-align:center; font-size:12px; color:var(--muted); line-height:1.5}
-  .fine b{color:var(--ink); font-weight:600}
-  .err{color:var(--red); font-size:13px; margin-top:10px; text-align:center; min-height:1em}
+  .cta .h{color:var(--red)}
+  .fine{margin:14px 2px 0;text-align:center;font-size:12px;color:var(--muted);line-height:1.5}
+  .fine b{color:var(--ink);font-weight:600}
+  .err{color:var(--red);font-size:13px;margin-top:10px;text-align:center;min-height:1em}
 
-  /* confirmation */
-  .done{display:none; text-align:center}
-  .done h2{font-family:var(--serif); font-size:28px; color:var(--red); margin:6px 0 12px}
-  .done p{color:var(--ink); font-size:15px; line-height:1.6; margin:0 auto 14px; max-width:36ch}
-  .done .secret{color:var(--muted); font-size:13px; font-style:italic; margin-bottom:22px}
+  /* ── payment step ── */
+  #pay-step{display:none}
+  .pay-box{
+    background:#fff8f0;border:1px solid var(--gold-line);border-radius:11px;
+    padding:22px 20px;margin-bottom:18px;text-align:center;
+  }
+  .pay-box .price{font-family:var(--serif);font-size:42px;font-weight:600;color:var(--red);line-height:1}
+  .pay-box .price-label{font-size:13px;color:var(--muted);margin:4px 0 14px}
+  .pay-box ul{list-style:none;padding:0;margin:0 0 6px;text-align:left;font-size:14px;color:var(--ink)}
+  .pay-box ul li{padding:5px 0;padding-left:22px;position:relative}
+  .pay-box ul li::before{content:"✓";position:absolute;left:0;color:#1faa54;font-weight:700}
+  .pay-btn{
+    margin-top:18px;width:100%;padding:15px;cursor:pointer;
+    font-family:var(--serif);font-size:18px;font-weight:600;
+    color:#4a0f10;border:none;border-radius:11px;
+    background:linear-gradient(180deg,#f3d792 0%,#e3b85b 55%,#cf9e44 100%);
+    box-shadow:0 8px 22px rgba(120,70,0,.35);transition:transform .12s,box-shadow .12s;
+  }
+  .pay-btn:hover{transform:translateY(-1px)}
+  .back-link{display:block;text-align:center;margin-top:12px;font-size:13px;
+    color:var(--muted);cursor:pointer;text-decoration:underline}
+
+  /* ── confirmation ── */
+  #done{display:none;text-align:center}
+  #done h2{font-family:var(--serif);font-size:28px;color:var(--red);margin:6px 0 12px}
+  #done p{color:var(--ink);font-size:15px;line-height:1.6;margin:0 auto 14px;max-width:36ch}
+  #done .secret{color:var(--muted);font-size:13px;font-style:italic;margin-bottom:22px}
   .wa{
-    display:inline-block; text-decoration:none; padding:14px 22px; border-radius:11px;
-    font-weight:600; font-size:16px; color:#fff; background:#1faa54;
+    display:inline-block;text-decoration:none;padding:14px 22px;border-radius:11px;
+    font-weight:600;font-size:16px;color:#fff;background:#1faa54;
     box-shadow:0 8px 20px rgba(20,120,60,.35);
   }
   .seal{font-size:40px}
-  @media (max-width:420px){ h1{font-size:28px} .card{padding:32px 22px 26px} }
+  @media(max-width:420px){h1{font-size:28px}.card{padding:28px 18px 22px}}
 </style>
 </head>
 <body>
 <div class="hearts" id="hearts" aria-hidden="true"></div>
 
 <main class="card">
-  <!-- SIGNUP -->
+
+  <!-- ── SIGNUP FORM ── -->
   <form id="form" novalidate>
+    <div class="bot-wrap">
+      <!-- Love Bot SVG: Wall-E body, heart head -->
+      <svg class="bot" viewBox="0 0 72 96" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Love Bot">
+        <!-- antenna -->
+        <line x1="36" y1="4" x2="36" y2="14" stroke="#c69b3f" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="36" cy="3" r="3" fill="#e3b85b"/>
+        <!-- heart head -->
+        <path d="M36 28 C36 28 20 18 20 10 C20 5.5 23.5 2 28 2 C31 2 33.5 3.5 36 6 C38.5 3.5 41 2 44 2 C48.5 2 52 5.5 52 10 C52 18 36 28 36 28Z" fill="#d6213d"/>
+        <!-- head highlight -->
+        <ellipse cx="27" cy="8" rx="4" ry="3" fill="#f05070" opacity=".45"/>
+        <!-- eyes on heart -->
+        <circle cx="29" cy="11" r="2.5" fill="white"/>
+        <circle cx="43" cy="11" r="2.5" fill="white"/>
+        <circle cx="30" cy="12" r="1.2" fill="#3a1418"/>
+        <circle cx="44" cy="12" r="1.2" fill="#3a1418"/>
+        <!-- neck -->
+        <rect x="31" y="28" width="10" height="6" rx="3" fill="#c69b3f"/>
+        <!-- body -->
+        <rect x="18" y="34" width="36" height="30" rx="8" fill="#e3b85b"/>
+        <!-- body panel -->
+        <rect x="24" y="39" width="24" height="18" rx="5" fill="#f3d792" opacity=".6"/>
+        <!-- chest heart -->
+        <path d="M36 53 C36 53 29 47 29 43.5 C29 41.5 30.5 40 32.5 40 C34 40 35 40.8 36 42 C37 40.8 38 40 39.5 40 C41.5 40 43 41.5 43 43.5 C43 47 36 53 36 53Z" fill="#d6213d"/>
+        <!-- arms -->
+        <rect x="4" y="36" width="14" height="8" rx="4" fill="#c69b3f"/>
+        <rect x="54" y="36" width="14" height="8" rx="4" fill="#c69b3f"/>
+        <!-- hands -->
+        <circle cx="5" cy="40" r="4" fill="#e3b85b"/>
+        <circle cx="67" cy="40" r="4" fill="#e3b85b"/>
+        <!-- treads / base -->
+        <rect x="14" y="64" width="44" height="14" rx="7" fill="#c69b3f"/>
+        <rect x="10" y="68" width="52" height="10" rx="5" fill="#a07830"/>
+        <!-- tread lines -->
+        <line x1="22" y1="68" x2="22" y2="78" stroke="#c69b3f" stroke-width="1.5"/>
+        <line x1="32" y1="68" x2="32" y2="78" stroke="#c69b3f" stroke-width="1.5"/>
+        <line x1="42" y1="68" x2="42" y2="78" stroke="#c69b3f" stroke-width="1.5"/>
+        <line x1="52" y1="68" x2="52" y2="78" stroke="#c69b3f" stroke-width="1.5"/>
+        <!-- sparkles -->
+        <text x="2" y="36" font-size="10" fill="#ecca78" opacity=".8">✦</text>
+        <text x="60" y="30" font-size="8" fill="#f3b9c4" opacity=".9">✦</text>
+      </svg>
+    </div>
+
     <div class="eyebrow">Private matchmaking · by introduction only</div>
     <h1>Your next date is already in your <em>network</em>.</h1>
     <p class="sub">Drop your LinkedIn. We quietly find someone worth meeting and make one good introduction. No swiping, no cringe.</p>
@@ -147,74 +223,117 @@
 
     <button class="cta" type="submit">Introduce me <span class="h">&#10084;</span></button>
     <div class="err" id="err"></div>
-    <p class="fine">Free to join. <b>£1 only once we've found someone.</b> And no one ever learns who said no.</p>
+    <p class="fine">Join free. <b>50p unlocks your first date</b> — turn down as many matches as you like first. No one ever learns who said no.</p>
   </form>
 
-  <!-- CONFIRMATION -->
-  <div class="done" id="done">
+  <!-- ── PAYMENT STEP ── -->
+  <div id="pay-step">
+    <div class="eyebrow">One last thing</div>
+    <h1 style="font-size:26px;margin-bottom:16px">Reserve your spot</h1>
+    <div class="pay-box">
+      <div class="price">50p</div>
+      <div class="price-label">one-time · covers your first date</div>
+      <ul>
+        <li>Turn down as many potential matches as you like — for free</li>
+        <li>50p only when you decide to go on a date</li>
+        <li>No one ever finds out who said no</li>
+        <li>Introduction handled entirely by your concierge</li>
+      </ul>
+    </div>
+    <button class="pay-btn" id="pay-btn">Pay 50p &amp; unlock ❤</button>
+    <span class="back-link" id="back-link">← Go back</span>
+  </div>
+
+  <!-- ── CONFIRMATION ── -->
+  <div id="done">
     <div class="seal">&#128156;</div>
     <h2>You're in.</h2>
     <p>Your matchmaker is already looking. The moment we find someone worth meeting, we'll introduce you.</p>
     <p class="secret">And remember — no one ever finds out who didn't say yes.</p>
     <a class="wa" id="wa" href="#">Say hello on WhatsApp →</a>
   </div>
+
 </main>
 
 <script>
-  // Fallback WhatsApp concierge number if the backend isn't reachable (demo-safe).
   const FALLBACK_WA = "447883319107";
 
-  // floating hearts
+  // ── floating hearts (more of them, varied sizes & glyphs) ──
   const H = document.getElementById('hearts');
-  const glyphs = ['❤','♥','❤'];
-  for (let i=0;i<22;i++){
-    const b=document.createElement('b');
-    b.textContent=glyphs[i%glyphs.length];
-    const size=12+Math.random()*30;
-    b.style.left=Math.random()*100+'vw';
-    b.style.fontSize=size+'px';
-    b.style.animationDuration=(8+Math.random()*10)+'s';
-    b.style.animationDelay=(-Math.random()*16)+'s';
-    b.style.color = Math.random()<0.5 ? 'var(--gold)' : '#f3b9c4';
+  const glyphs = ['❤','♥','❤','💛','❤','♥','✦','❤'];
+  const colors = ['var(--gold)','#f3b9c4','#d6213d','var(--gold)','#ecca78','#f3b9c4','var(--gold)'];
+  for (let i = 0; i < 48; i++) {
+    const b = document.createElement('b');
+    b.textContent = glyphs[i % glyphs.length];
+    const size = 10 + Math.random() * 36;
+    b.style.cssText = `
+      left:${Math.random()*100}vw;
+      font-size:${size}px;
+      animation-duration:${7 + Math.random()*12}s;
+      animation-delay:${-Math.random()*20}s;
+      color:${colors[i % colors.length]};
+      font-style:normal;
+    `;
     H.appendChild(b);
   }
 
-  // segmented controls
-  function seg(id){
-    const box=document.getElementById(id); let val=null;
-    box.addEventListener('click',e=>{
-      const b=e.target.closest('button'); if(!b) return;
-      [...box.children].forEach(x=>x.setAttribute('aria-pressed','false'));
-      b.setAttribute('aria-pressed','true'); val=b.dataset.v;
+  // ── segmented controls ──
+  function seg(id) {
+    const box = document.getElementById(id); let val = null;
+    box.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      [...box.children].forEach(x => x.setAttribute('aria-pressed','false'));
+      b.setAttribute('aria-pressed','true'); val = b.dataset.v;
     });
-    return ()=>val;
+    return () => val;
   }
-  const getGender=seg('gender'), getSeeking=seg('seeking');
+  const getGender = seg('gender'), getSeeking = seg('seeking');
 
-  // submit
-  const form=document.getElementById('form'), err=document.getElementById('err');
-  form.addEventListener('submit', async e=>{
-    e.preventDefault(); err.textContent='';
-    const linkedin=document.getElementById('li').value.trim();
-    const location=document.getElementById('loc').value.trim();
-    const gender=getGender(), seeking=getSeeking();
-    if(!/linkedin\.com\/in\//i.test(linkedin) && !/linkedin\.com\//i.test(linkedin)){
-      err.textContent='Pop in your LinkedIn profile link to continue.'; return;
+  // ── state ──
+  let pendingWaLink = null;
+
+  // ── form submit → validate → show pay step ──
+  const form = document.getElementById('form');
+  const err  = document.getElementById('err');
+  form.addEventListener('submit', async e => {
+    e.preventDefault(); err.textContent = '';
+    const linkedin = document.getElementById('li').value.trim();
+    const location = document.getElementById('loc').value.trim();
+    const gender = getGender(), seeking = getSeeking();
+    if (!/linkedin\.com\//i.test(linkedin)) {
+      err.textContent = 'Pop in your LinkedIn profile link to continue.'; return;
     }
-    if(!gender){ err.textContent='Tap one for "I am".'; return; }
-    if(!seeking){ err.textContent='Tap who you’d like to meet.'; return; }
-    if(!location){ err.textContent='Where are you roughly based?'; return; }
+    if (!gender)   { err.textContent = 'Tap one for "I am".'; return; }
+    if (!seeking)  { err.textContent = 'Tap who you\'d like to meet.'; return; }
+    if (!location) { err.textContent = 'Where are you roughly based?'; return; }
 
-    let wa = `https://wa.me/${FALLBACK_WA}?text=${encodeURIComponent("Hi! I'm ready to meet someone ❤")}`;
-    try{
-      const r=await fetch('/signup',{method:'POST',headers:{'content-type':'application/json'},
-        body:JSON.stringify({linkedin,gender,seeking,location})});
-      if(r.ok){ const d=await r.json(); if(d.wa_link) wa=d.wa_link; }
-    }catch(_){ /* backend not up — fall back to the demo WhatsApp link */ }
+    // capture lead immediately (no payment yet)
+    pendingWaLink = `https://wa.me/${FALLBACK_WA}?text=${encodeURIComponent("Hi! I'm ready to meet someone ❤")}`;
+    try {
+      const r = await fetch('/signup', {
+        method: 'POST',
+        headers: {'content-type': 'application/json'},
+        body: JSON.stringify({linkedin, gender, seeking, location})
+      });
+      if (r.ok) { const d = await r.json(); if (d.wa_link) pendingWaLink = d.wa_link; }
+    } catch(_) {}
 
-    document.getElementById('wa').href=wa;
-    form.style.display='none';
-    document.getElementById('done').style.display='block';
+    form.style.display = 'none';
+    document.getElementById('pay-step').style.display = 'block';
+  });
+
+  // ── pay button → show confirmation ──
+  document.getElementById('pay-btn').addEventListener('click', () => {
+    // PayPal integration wired here later; for now advance to confirmation
+    document.getElementById('pay-step').style.display = 'none';
+    document.getElementById('wa').href = pendingWaLink;
+    document.getElementById('done').style.display = 'block';
+  });
+
+  // ── back link ──
+  document.getElementById('back-link').addEventListener('click', () => {
+    document.getElementById('pay-step').style.display = 'none';
+    form.style.display = 'block';
   });
 </script>
 </body>
